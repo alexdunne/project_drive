@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  database:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: project_drive
+      POSTGRES_PASSWORD: project_drive
+      POSTGRES_DB: project_drive
+    ports:
+      - 5432:5432
