@@ -1,10 +1,8 @@
 defmodule ProjectDrive.Accounts.User do
-  use Ecto.Schema
+  use ProjectDrive.Schema
   import Ecto.Changeset
 
   alias ProjectDrive.Accounts.Credential
-
-  @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "users" do
     field :email, :string

@@ -9,20 +9,11 @@ defmodule ProjectDriveWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
+  forward "/api", Absinthe.Plug, schema: ProjectDriveWeb.Schema
 
-  scope "/", ProjectDriveWeb do
-    pipe_through :browser
-
-    get "/", PageController, :index
-  end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", ProjectDriveWeb do
-  #   pipe_through :api
-  # end
+  forward "/graphiql", Absinthe.Plug.GraphiQL,
+    schema: ProjectDriveWeb.Schema,
+    socket: ProjectDriveWeb.UserSocket
 
   # Enables LiveDashboard only for development
   #
