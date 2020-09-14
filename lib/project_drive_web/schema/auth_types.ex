@@ -7,6 +7,11 @@ defmodule ProjectDriveWeb.Schema.AuthTypes do
     field :name, non_null(:string)
   end
 
+  input_object :login_input do
+    field :email, non_null(:string)
+    field :password, non_null(:string)
+  end
+
   object :auth_payload do
     field :token, :string
     field :user, :user

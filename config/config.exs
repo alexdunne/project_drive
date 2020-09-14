@@ -26,6 +26,10 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :project_drive, ProjectDrive.Guardian,
+  issuer: "ProjectDrive",
+  secret_key: "fbbk2PhNH+wy+vI4INc0I/1iI49X7PSz+TuRfEEFXca762w/w9mY9PMR4Ad8QJqE"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
