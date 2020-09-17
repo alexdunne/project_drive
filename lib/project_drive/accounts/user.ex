@@ -2,13 +2,14 @@ defmodule ProjectDrive.Accounts.User do
   use ProjectDrive.Schema
   import Ecto.Changeset
 
-  alias ProjectDrive.Accounts.Credential
+  alias ProjectDrive.Accounts.{Credential, Instructor}
 
   schema "users" do
     field :email, :string
     field :name, :string
 
     has_one :credential, Credential
+    has_one :instructor, Instructor
 
     timestamps()
   end

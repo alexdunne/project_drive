@@ -3,7 +3,7 @@ defmodule ProjectDriveWeb.Resolvers.Auth do
 
   def register(_parent, %{input: input}, _context) do
     {:ok, user} =
-      Accounts.create_user(%{
+      Accounts.create_instructor(%{
         name: input.name,
         email: input.email,
         credential: %{

@@ -122,4 +122,61 @@ defmodule ProjectDrive.AccountsTest do
       assert %Ecto.Changeset{} = Accounts.change_credential(credential)
     end
   end
+
+  describe "instructors" do
+    alias ProjectDrive.Accounts.Instructor
+
+    @valid_attrs %{}
+    @update_attrs %{}
+    @invalid_attrs %{}
+
+    def instructor_fixture(attrs \\ %{}) do
+      {:ok, instructor} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Accounts.create_instructor()
+
+      instructor
+    end
+
+    test "list_instructors/0 returns all instructors" do
+      instructor = instructor_fixture()
+      assert Accounts.list_instructors() == [instructor]
+    end
+
+    test "get_instructor!/1 returns the instructor with given id" do
+      instructor = instructor_fixture()
+      assert Accounts.get_instructor!(instructor.id) == instructor
+    end
+
+    test "create_instructor/1 with valid data creates a instructor" do
+      assert {:ok, %Instructor{} = instructor} = Accounts.create_instructor(@valid_attrs)
+    end
+
+    test "create_instructor/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_instructor(@invalid_attrs)
+    end
+
+    test "update_instructor/2 with valid data updates the instructor" do
+      instructor = instructor_fixture()
+      assert {:ok, %Instructor{} = instructor} = Accounts.update_instructor(instructor, @update_attrs)
+    end
+
+    test "update_instructor/2 with invalid data returns error changeset" do
+      instructor = instructor_fixture()
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_instructor(instructor, @invalid_attrs)
+      assert instructor == Accounts.get_instructor!(instructor.id)
+    end
+
+    test "delete_instructor/1 deletes the instructor" do
+      instructor = instructor_fixture()
+      assert {:ok, %Instructor{}} = Accounts.delete_instructor(instructor)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_instructor!(instructor.id) end
+    end
+
+    test "change_instructor/1 returns a instructor changeset" do
+      instructor = instructor_fixture()
+      assert %Ecto.Changeset{} = Accounts.change_instructor(instructor)
+    end
+  end
 end
