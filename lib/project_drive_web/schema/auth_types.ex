@@ -21,8 +21,6 @@ defmodule ProjectDriveWeb.Schema.AuthTypes do
 
   object :user do
     field :id, :id
-    field :email, :string
-    field :name, :string
   end
 
   object :auth_mutations do

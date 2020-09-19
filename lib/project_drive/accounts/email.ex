@@ -16,8 +16,8 @@ defmodule ProjectDrive.Accounts.Email do
     new_email(
       to: student_invite.email,
       from: @sender_email,
-      subject: "New invite from #{student_invite.instructor.user.email}",
-      text_body: "You've been invited by Instructor #{student_invite.instructor.user.name}"
+      subject: "New invite from #{student_invite.instructor.email}",
+      text_body: "You've been invited by Instructor #{student_invite.instructor.name}"
     )
   end
 end

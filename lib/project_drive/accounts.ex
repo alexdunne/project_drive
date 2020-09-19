@@ -14,14 +14,15 @@ defmodule ProjectDrive.Accounts do
 
   def get_instructor!(id), do: Repo.get!(Instructor, id)
 
-  def create_instructor(attrs \\ %{}) do
+  def create_instructor(attrs) do
     user =
       %User{}
       |> User.changeset(attrs)
       |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
       |> Repo.insert!()
 
-    %Instructor{user: user}
+    %Instructor{user: user, email: attrs.email, name: attrs.name}
+    |> Instructor.changeset(attrs)
     |> Repo.insert!()
 
     {:ok, user}
@@ -68,13 +69,8 @@ defmodule ProjectDrive.Accounts do
 
   def send_student_invite_email(%StudentInvite{} = student_invite) do
     student_invite =
-      Repo.one(
-        from student_invite in StudentInvite,
-          where: student_invite.id == ^student_invite.id,
-          inner_join: instructor in assoc(student_invite, :instructor),
-          inner_join: user in assoc(instructor, :user),
-          preload: [instructor: {instructor, user: user}]
-      )
+      student_invite
+      |> Repo.preload(:instructor)
 
     Email.student_invite_email(student_invite)
     |> Mailer.deliver_now()

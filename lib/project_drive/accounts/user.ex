@@ -5,9 +5,6 @@ defmodule ProjectDrive.Accounts.User do
   alias ProjectDrive.Accounts.{Credential, Instructor}
 
   schema "users" do
-    field :email, :string
-    field :name, :string
-
     has_one :credential, Credential
     has_one :instructor, Instructor
 
@@ -17,7 +14,7 @@ defmodule ProjectDrive.Accounts.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:email, :name])
-    |> validate_required([:email, :name])
+    |> cast(attrs, [])
+    |> validate_required([])
   end
 end
