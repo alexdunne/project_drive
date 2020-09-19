@@ -13,11 +13,21 @@ defmodule ProjectDrive.Accounts.Email do
       inspect(student_invite)
     end)
 
+    %{email: email, instructor: instructor, token: token, expires_at: expires_at} = student_invite
+
+    {:ok, formatted_expires_at} = Timex.format(expires_at, "{WDfull}, {D} {Mshort} {h24}:{m}")
+
+    body =
+      "You've been invited by Instructor #{instructor.name}. Token: #{token}, Expires at: #{
+        formatted_expires_at
+      }"
+
     new_email(
-      to: student_invite.email,
+      to: email,
       from: @sender_email,
-      subject: "New invite from #{student_invite.instructor.email}",
-      text_body: "You've been invited by Instructor #{student_invite.instructor.name}"
+      subject: "New invite from #{instructor.email}",
+      html_body: body,
+      text_body: body
     )
   end
 end

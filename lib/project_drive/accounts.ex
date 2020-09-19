@@ -57,8 +57,11 @@ defmodule ProjectDrive.Accounts do
 
   def create_student_invite(%Instructor{} = instructor, invite_attrs) do
     with :ok <- Bodyguard.permit!(Policy, :create_student_invite, instructor, invite_attrs) do
+      student_invites_attrs = build_student_invite_attrs(%{email: invite_attrs.email})
+
       {:ok, student_invite} =
-        Ecto.build_assoc(instructor, :student_invites, %{email: invite_attrs.email})
+        Ecto.build_assoc(instructor, :student_invites)
+        |> StudentInvite.changeset(student_invites_attrs)
         |> Repo.insert()
 
       publish_event(student_invite, :"accounts.student_invite.created")
@@ -74,6 +77,14 @@ defmodule ProjectDrive.Accounts do
 
     Email.student_invite_email(student_invite)
     |> Mailer.deliver_now()
+  end
+
+  defp build_student_invite_attrs(%{email: email}) do
+    %{
+      email: email,
+      token: UUID.uuid4(),
+      expires_at: Timex.shift(Timex.now(), hours: 48)
+    }
   end
 
   defp publish_event(%StudentInvite{} = student_invite, event_name) do
