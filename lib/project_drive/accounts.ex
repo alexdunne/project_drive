@@ -53,6 +53,10 @@ defmodule ProjectDrive.Accounts do
       user_attrs = %{credential: %{email: student_invite.email, plain_password: attrs.password}}
       student_attrs = %{name: attrs.name, email: student_invite.email}
 
+      student_invite =
+        student_invite
+        |> Repo.preload(:instructor)
+
       create_user_changeset =
         %User{}
         |> User.changeset(user_attrs)
@@ -66,7 +70,7 @@ defmodule ProjectDrive.Accounts do
         Ecto.Multi.new()
         |> Ecto.Multi.insert(:user, create_user_changeset)
         |> Ecto.Multi.run(:student, fn repo, %{user: user} ->
-          Ecto.build_assoc(user, :students)
+          Ecto.build_assoc(user, :students, %{instructor: student_invite.instructor})
           |> Student.changeset(student_attrs)
           |> repo.insert()
         end)
