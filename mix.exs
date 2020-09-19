@@ -49,7 +49,10 @@ defmodule ProjectDrive.MixProject do
       {:absinthe_plug, "~> 1.5"},
       {:argon2_elixir, "~> 2.0"},
       {:guardian, "~> 2.0"},
-      {:bodyguard, "~> 2.4"}
+      {:bodyguard, "~> 2.4"},
+      {:event_bus, "~> 1.6.1"},
+      {:elixir_uuid, "~> 1.2"},
+      {:bamboo, "~> 1.5"}
     ]
   end
 

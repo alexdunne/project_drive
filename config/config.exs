@@ -7,6 +7,10 @@
 # General application configuration
 use Mix.Config
 
+# Configure app variables
+config :project_drive,
+  sender_email: "hi@alexdunne.net"
+
 config :project_drive,
   ecto_repos: [ProjectDrive.Repo]
 
@@ -26,9 +30,14 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Configure Guardian
 config :project_drive, ProjectDrive.Guardian,
   issuer: "ProjectDrive",
   secret_key: "fbbk2PhNH+wy+vI4INc0I/1iI49X7PSz+TuRfEEFXca762w/w9mY9PMR4Ad8QJqE"
+
+# Configure EventBus
+config :event_bus,
+  topics: [:"accounts.student_invite.created"]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

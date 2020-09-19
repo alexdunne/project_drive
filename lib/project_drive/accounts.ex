@@ -1,18 +1,18 @@
 defmodule ProjectDrive.Accounts do
-  @moduledoc """
-  The Accounts context.
-  """
-
   import Ecto.Query, warn: false
-  alias ProjectDrive.Repo
 
-  alias ProjectDrive.Accounts.{Credential, Instructor, Policy, User}
+  alias ProjectDrive.{Repo, Mailer}
+  alias ProjectDrive.Accounts.{Credential, Email, Instructor, Policy, StudentInvite, User}
+
+  use EventBus.EventSource
 
   def get_user!(id), do: Repo.get!(User, id)
 
-  def get_instructor!(user_id) do
+  def get_instructor_for_user!(user_id) do
     Repo.get_by!(Instructor, %{user_id: user_id})
   end
+
+  def get_instructor!(id), do: Repo.get!(Instructor, id)
 
   def create_instructor(attrs \\ %{}) do
     user =
@@ -56,8 +56,33 @@ defmodule ProjectDrive.Accounts do
 
   def create_student_invite(%Instructor{} = instructor, invite_attrs) do
     with :ok <- Bodyguard.permit!(Policy, :create_student_invite, instructor, invite_attrs) do
-      Ecto.build_assoc(instructor, :student_invites, %{email: invite_attrs.email})
-      |> Repo.insert()
+      {:ok, student_invite} =
+        Ecto.build_assoc(instructor, :student_invites, %{email: invite_attrs.email})
+        |> Repo.insert()
+
+      publish_event(student_invite, :"accounts.student_invite.created")
+
+      {:ok, student_invite}
+    end
+  end
+
+  def send_student_invite_email(%StudentInvite{} = student_invite) do
+    student_invite =
+      Repo.one(
+        from student_invite in StudentInvite,
+          where: student_invite.id == ^student_invite.id,
+          inner_join: instructor in assoc(student_invite, :instructor),
+          inner_join: user in assoc(instructor, :user),
+          preload: [instructor: {instructor, user: user}]
+      )
+
+    Email.student_invite_email(student_invite)
+    |> Mailer.deliver_now()
+  end
+
+  defp publish_event(%StudentInvite{} = student_invite, event_name) do
+    EventSource.notify %{id: UUID.uuid4(), topic: event_name} do
+      %{student_invite: student_invite}
     end
   end
 end

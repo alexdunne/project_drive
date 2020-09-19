@@ -14,9 +14,10 @@ defmodule ProjectDrive.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: ProjectDrive.PubSub},
       # Start the Endpoint (http/https)
-      ProjectDriveWeb.Endpoint
+      ProjectDriveWeb.Endpoint,
       # Start a worker by calling: ProjectDrive.Worker.start_link(arg)
       # {ProjectDrive.Worker, arg}
+      ProjectDrive.EventHandler.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

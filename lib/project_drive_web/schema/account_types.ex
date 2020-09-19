@@ -20,7 +20,7 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
     field :create_student_invite, :student_invite_payload do
       arg(:input, non_null(:create_student_invite_input))
 
-      resolve(&Resolvers.Account.createStudentInvite/3)
+      resolve(&Resolvers.Account.create_student_invite/3)
     end
   end
 end
