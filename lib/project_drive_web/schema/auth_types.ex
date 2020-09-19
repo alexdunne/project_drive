@@ -9,6 +9,12 @@ defmodule ProjectDriveWeb.Schema.AuthTypes do
     field :name, non_null(:string)
   end
 
+  input_object :register_student_invite_input do
+    field :token, non_null(:string)
+    field :password, non_null(:string)
+    field :name, non_null(:string)
+  end
+
   input_object :login_input do
     field :email, non_null(:string)
     field :password, non_null(:string)
@@ -29,6 +35,13 @@ defmodule ProjectDriveWeb.Schema.AuthTypes do
       arg(:input, non_null(:register_input))
 
       resolve(&Resolvers.Auth.register/3)
+    end
+
+    @desc "Register a new user account from a student invite"
+    field :register_from_student_invite, :auth_payload do
+      arg(:input, non_null(:register_student_invite_input))
+
+      resolve(&Resolvers.Auth.register_student_invite/3)
     end
 
     @desc "Login with existing account credentials"

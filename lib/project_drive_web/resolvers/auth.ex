@@ -6,10 +6,20 @@ defmodule ProjectDriveWeb.Resolvers.Auth do
       Accounts.create_instructor(%{
         name: input.name,
         email: input.email,
-        credential: %{
-          email: input.email,
-          plain_password: input.password
-        }
+        password: input.password
+      })
+
+    {:ok, jwt, _} = ProjectDrive.Guardian.encode_and_sign(user)
+
+    {:ok, %{token: jwt, user: %{id: user.id}}}
+  end
+
+  def register_student_invite(_parent, %{input: input}, _context) do
+    {:ok, user} =
+      Accounts.create_student(%{
+        name: input.name,
+        token: input.token,
+        password: input.password
       })
 
     {:ok, jwt, _} = ProjectDrive.Guardian.encode_and_sign(user)

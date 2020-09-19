@@ -26,7 +26,7 @@ defmodule ProjectDrive.Accounts.StudentInvite do
   defp validate_is_future_date(changeset, field) do
     date_to_check = get_field(changeset, field)
 
-    case Timex.compare(Timex.today(), date_to_check) do
+    case Timex.compare(Timex.now(), date_to_check) do
       -1 ->
         changeset
 

@@ -2,7 +2,18 @@ defmodule ProjectDrive.Accounts do
   import Ecto.Query, warn: false
 
   alias ProjectDrive.{Repo, Mailer}
-  alias ProjectDrive.Accounts.{Credential, Email, Instructor, Policy, StudentInvite, User}
+
+  alias ProjectDrive.Accounts.{
+    Credential,
+    Email,
+    Instructor,
+    Policy,
+    Student,
+    StudentInvite,
+    User
+  }
+
+  require Logger
 
   use EventBus.EventSource
 
@@ -15,17 +26,55 @@ defmodule ProjectDrive.Accounts do
   def get_instructor!(id), do: Repo.get!(Instructor, id)
 
   def create_instructor(attrs) do
-    user =
-      %User{}
-      |> User.changeset(attrs)
-      |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
-      |> Repo.insert!()
+    user_attrs = %{credential: %{email: attrs.email, plain_password: attrs.password}}
+    instructor_attrs = %{name: attrs.name, email: attrs.email}
 
-    %Instructor{user: user, email: attrs.email, name: attrs.name}
-    |> Instructor.changeset(attrs)
-    |> Repo.insert!()
+    create_user_changeset =
+      %User{}
+      |> User.changeset(user_attrs)
+      |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
+
+    {:ok, %{user: user}} =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:user, create_user_changeset)
+      |> Ecto.Multi.run(:instructor, fn repo, %{user: user} ->
+        Ecto.build_assoc(user, :instructor)
+        |> Instructor.changeset(instructor_attrs)
+        |> repo.insert()
+      end)
+      |> Repo.transaction()
 
     {:ok, user}
+  end
+
+  def create_student(attrs) do
+    with student_invite <- Repo.get_by!(StudentInvite, token: attrs.token),
+         false <- has_student_invite_expired(student_invite) do
+      user_attrs = %{credential: %{email: student_invite.email, plain_password: attrs.password}}
+      student_attrs = %{name: attrs.name, email: student_invite.email}
+
+      create_user_changeset =
+        %User{}
+        |> User.changeset(user_attrs)
+        |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
+
+      expire_student_invite_changeset =
+        student_invite
+        |> StudentInvite.changeset(%{expires_at: Timex.shift(Timex.now(), seconds: 1)})
+
+      {:ok, %{user: user}} =
+        Ecto.Multi.new()
+        |> Ecto.Multi.insert(:user, create_user_changeset)
+        |> Ecto.Multi.run(:student, fn repo, %{user: user} ->
+          Ecto.build_assoc(user, :students)
+          |> Student.changeset(student_attrs)
+          |> repo.insert()
+        end)
+        |> Ecto.Multi.update(:student_invite, expire_student_invite_changeset)
+        |> Repo.transaction()
+
+      {:ok, user}
+    end
   end
 
   @doc """
@@ -85,6 +134,20 @@ defmodule ProjectDrive.Accounts do
       token: UUID.uuid4(),
       expires_at: Timex.shift(Timex.now(), hours: 48)
     }
+  end
+
+  defp has_student_invite_expired(%StudentInvite{} = student_invite) do
+    formatted_now = Timex.format!(Timex.now(), "{RFC3339}")
+    formatted_expires_at = Timex.format!(student_invite.expires_at, "{RFC3339}")
+
+    Logger.info(
+      "Student invite expired check. Now: #{formatted_now}, Expires: #{formatted_expires_at}"
+    )
+
+    case Timex.compare(Timex.today(), student_invite.expires_at) do
+      -1 -> false
+      _ -> true
+    end
   end
 
   defp publish_event(%StudentInvite{} = student_invite, event_name) do
