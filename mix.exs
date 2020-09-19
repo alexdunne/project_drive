@@ -52,7 +52,8 @@ defmodule ProjectDrive.MixProject do
       {:bodyguard, "~> 2.4"},
       {:event_bus, "~> 1.6.1"},
       {:elixir_uuid, "~> 1.2"},
-      {:bamboo, "~> 1.5"}
+      {:bamboo, "~> 1.5"},
+      {:timex, "~> 3.5"}
     ]
   end
 
