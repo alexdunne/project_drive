@@ -2,10 +2,11 @@ defmodule ProjectDrive.Accounts.Instructor do
   use ProjectDrive.Schema
   import Ecto.Changeset
 
-  alias ProjectDrive.Accounts.User
+  alias ProjectDrive.Accounts.{StudentInvite, User}
 
   schema "instructors" do
     belongs_to :user, User
+    has_many :student_invites, StudentInvite
 
     timestamps()
   end

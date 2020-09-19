@@ -6,9 +6,13 @@ defmodule ProjectDrive.Accounts do
   import Ecto.Query, warn: false
   alias ProjectDrive.Repo
 
-  alias ProjectDrive.Accounts.{Credential, Instructor, User}
+  alias ProjectDrive.Accounts.{Credential, Instructor, Policy, User}
 
   def get_user!(id), do: Repo.get!(User, id)
+
+  def get_instructor!(user_id) do
+    Repo.get_by!(Instructor, %{user_id: user_id})
+  end
 
   def create_instructor(attrs \\ %{}) do
     user =
@@ -47,6 +51,13 @@ defmodule ProjectDrive.Accounts do
       {:ok, user}
     else
       {:error, :not_found}
+    end
+  end
+
+  def create_student_invite(%Instructor{} = instructor, invite_attrs) do
+    with :ok <- Bodyguard.permit!(Policy, :create_student_invite, instructor, invite_attrs) do
+      Ecto.build_assoc(instructor, :student_invites, %{email: invite_attrs.email})
+      |> Repo.insert()
     end
   end
 end

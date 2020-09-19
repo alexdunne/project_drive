@@ -48,7 +48,8 @@ defmodule ProjectDrive.MixProject do
       {:absinthe, "~> 1.5"},
       {:absinthe_plug, "~> 1.5"},
       {:argon2_elixir, "~> 2.0"},
-      {:guardian, "~> 2.0"}
+      {:guardian, "~> 2.0"},
+      {:bodyguard, "~> 2.4"}
     ]
   end
 

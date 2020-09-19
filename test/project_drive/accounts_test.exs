@@ -179,4 +179,63 @@ defmodule ProjectDrive.AccountsTest do
       assert %Ecto.Changeset{} = Accounts.change_instructor(instructor)
     end
   end
+
+  describe "student_invites" do
+    alias ProjectDrive.Accounts.StudentInvite
+
+    @valid_attrs %{email: "some email"}
+    @update_attrs %{email: "some updated email"}
+    @invalid_attrs %{email: nil}
+
+    def student_invite_fixture(attrs \\ %{}) do
+      {:ok, student_invite} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Accounts.create_student_invite()
+
+      student_invite
+    end
+
+    test "list_student_invites/0 returns all student_invites" do
+      student_invite = student_invite_fixture()
+      assert Accounts.list_student_invites() == [student_invite]
+    end
+
+    test "get_student_invite!/1 returns the student_invite with given id" do
+      student_invite = student_invite_fixture()
+      assert Accounts.get_student_invite!(student_invite.id) == student_invite
+    end
+
+    test "create_student_invite/1 with valid data creates a student_invite" do
+      assert {:ok, %StudentInvite{} = student_invite} = Accounts.create_student_invite(@valid_attrs)
+      assert student_invite.email == "some email"
+    end
+
+    test "create_student_invite/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_student_invite(@invalid_attrs)
+    end
+
+    test "update_student_invite/2 with valid data updates the student_invite" do
+      student_invite = student_invite_fixture()
+      assert {:ok, %StudentInvite{} = student_invite} = Accounts.update_student_invite(student_invite, @update_attrs)
+      assert student_invite.email == "some updated email"
+    end
+
+    test "update_student_invite/2 with invalid data returns error changeset" do
+      student_invite = student_invite_fixture()
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_student_invite(student_invite, @invalid_attrs)
+      assert student_invite == Accounts.get_student_invite!(student_invite.id)
+    end
+
+    test "delete_student_invite/1 deletes the student_invite" do
+      student_invite = student_invite_fixture()
+      assert {:ok, %StudentInvite{}} = Accounts.delete_student_invite(student_invite)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_student_invite!(student_invite.id) end
+    end
+
+    test "change_student_invite/1 returns a student_invite changeset" do
+      student_invite = student_invite_fixture()
+      assert %Ecto.Changeset{} = Accounts.change_student_invite(student_invite)
+    end
+  end
 end
