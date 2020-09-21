@@ -1,4 +1,7 @@
 defmodule ProjectDrive.MixProject do
+  @moduledoc """
+  Mix project configuration for the project
+  """
   use Mix.Project
 
   def project do
@@ -53,7 +56,8 @@ defmodule ProjectDrive.MixProject do
       {:event_bus, "~> 1.6.1"},
       {:elixir_uuid, "~> 1.2"},
       {:bamboo, "~> 1.5"},
-      {:timex, "~> 3.5"}
+      {:timex, "~> 3.5"},
+      {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 

@@ -1,4 +1,7 @@
 defmodule ProjectDrive.EventHandler.Supervisor do
+  @moduledoc """
+  Supervises all EventHandlers across various contexts
+  """
   use Supervisor
 
   def start_link(arg) do
