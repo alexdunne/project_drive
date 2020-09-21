@@ -98,14 +98,14 @@ defmodule ProjectDrive.Accounts do
       ** (Ecto.NoResultsError)
   """
   def login_with_email_and_password(email, password) do
-    user =
-      Repo.get_by!(User, email: email)
-      |> Repo.preload(:credential)
+    credential =
+      Repo.get_by!(Credential, email: email)
+      |> Repo.preload(:user)
 
-    password_matches = Argon2.verify_pass(password, user.credential.password)
+    password_matches = Argon2.verify_pass(password, credential.password)
 
     if password_matches do
-      {:ok, user}
+      {:ok, credential.user}
     else
       {:error, :not_found}
     end
