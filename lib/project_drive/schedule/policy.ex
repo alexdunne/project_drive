@@ -1,13 +1,10 @@
 defmodule ProjectDrive.Schedule.Policy do
   @behaviour Bodyguard.Policy
 
-  alias ProjectDrive.{Accounts, Schedule}
-  alias ProjectDrive.Schedule.Instructor
+  alias ProjectDrive.{Accounts}
 
-  def authorize(:create_lesson, %Instructor{} = instructor, %{student_id: student_id}) do
-    student =
-      Accounts.get_student(student_id)
-      |> Schedule.student_for_student_account()
+  def authorize(:create_lesson, %Accounts.Instructor{} = instructor, %{student_id: student_id}) do
+    student = Accounts.get_student(student_id)
 
     instructor.id == student.instructor_id
   end
