@@ -4,25 +4,14 @@ defmodule ProjectDrive.Accounts do
   """
   import Ecto.Query, warn: false
 
-  alias ProjectDrive.{Accounts, Repo, Mailer}
-
-  alias ProjectDrive.Accounts.{
-    Credential,
-    Email,
-    Instructor,
-    Policy,
-    Student,
-    StudentInvite,
-    User
-  }
+  alias ProjectDrive.{Accounts, Identity, Repo, Mailer}
+  alias ProjectDrive.Accounts.{Email, Instructor, Policy, Student, StudentInvite}
 
   require Logger
 
   use EventBus.EventSource
 
   defdelegate authorize(action, user, params), to: Policy
-
-  def get_user!(id), do: Repo.get!(User, id)
 
   def get_instructor_for_user!(user_id) do
     Repo.get_by!(Instructor, %{user_id: user_id})
@@ -33,86 +22,49 @@ defmodule ProjectDrive.Accounts do
   def get_student(id), do: Repo.get(Student, id)
 
   def create_instructor(attrs) do
-    user_attrs = %{credential: %{email: attrs.email, plain_password: attrs.password}}
-    instructor_attrs = %{name: attrs.name, email: attrs.email}
-
-    create_user_changeset =
-      %User{}
-      |> User.changeset(user_attrs)
-      |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
-
     {:ok, %{user: user}} =
       Ecto.Multi.new()
-      |> Ecto.Multi.insert(:user, create_user_changeset)
-      |> Ecto.Multi.run(:instructor, fn repo, %{user: user} ->
-        Ecto.build_assoc(user, :instructor)
-        |> Instructor.changeset(instructor_attrs)
-        |> repo.insert()
+      |> Ecto.Multi.run(:user, fn _, _ ->
+        Identity.create_user(%{email: attrs.email, password: attrs.password})
+      end)
+      |> Ecto.Multi.run(:instructor, fn _repo, %{user: user} ->
+        create_instructor_for_user(user, %{name: attrs.name, email: attrs.email})
       end)
       |> Repo.transaction()
 
     {:ok, user}
   end
 
+  defp create_instructor_for_user(%Identity.User{} = user, attrs) do
+    Ecto.build_assoc(user, :instructor)
+    |> Instructor.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def create_student(attrs) do
     with student_invite <- Repo.get_by!(StudentInvite, token: attrs.token),
-         false <- has_student_invite_expired(student_invite) do
-      user_attrs = %{credential: %{email: student_invite.email, plain_password: attrs.password}}
-      student_attrs = %{name: attrs.name, email: student_invite.email}
-
-      student_invite =
-        student_invite
-        |> Repo.preload(:instructor)
-
-      create_user_changeset =
-        %User{}
-        |> User.changeset(user_attrs)
-        |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
-
-      expire_student_invite_changeset =
-        student_invite
-        |> StudentInvite.changeset(%{expires_at: Timex.shift(Timex.now(), seconds: 1)})
+         false <- StudentInvite.has_expired?(student_invite) do
+      instructor = get_instructor(student_invite.instructor_id)
 
       {:ok, %{user: user}} =
         Ecto.Multi.new()
-        |> Ecto.Multi.insert(:user, create_user_changeset)
-        |> Ecto.Multi.run(:student, fn repo, %{user: user} ->
-          Ecto.build_assoc(user, :students, %{instructor: student_invite.instructor})
-          |> Student.changeset(student_attrs)
-          |> repo.insert()
+        |> Ecto.Multi.run(:user, fn _, _ ->
+          Identity.create_user(%{email: student_invite.email, password: attrs.password})
         end)
-        |> Ecto.Multi.update(:student_invite, expire_student_invite_changeset)
+        |> Ecto.Multi.run(:create_student, fn _repo, %{user: user} ->
+          create_student_for_user(user, instructor, %{name: attrs.name, email: student_invite.email})
+        end)
+        |> Ecto.Multi.update(:expire_student_invite, StudentInvite.expire_invite_changeset(student_invite))
         |> Repo.transaction()
 
       {:ok, user}
     end
   end
 
-  @doc """
-  Fetches a user with a matching email and password.
-
-  Raises `Ecto.NoResultsError` if the User does not exist.
-
-  ## Examples
-
-      iex> login_with_email_and_password!("hi@alexdunne.net", "password")
-      %User{}
-
-      iex> login_with_email_and_password!("hi@alexdunne.net", "incorrect")
-      ** (Ecto.NoResultsError)
-  """
-  def login_with_email_and_password(email, password) do
-    credential =
-      Repo.get_by!(Credential, email: email)
-      |> Repo.preload(:user)
-
-    password_matches = Argon2.verify_pass(password, credential.password)
-
-    if password_matches do
-      {:ok, credential.user}
-    else
-      {:error, :not_found}
-    end
+  defp create_student_for_user(%Identity.User{} = user, %Instructor{} = instructor, attrs) do
+    Ecto.build_assoc(user, :students, %{instructor: instructor})
+    |> Student.changeset(attrs)
+    |> Repo.insert()
   end
 
   def create_student_invite(%Instructor{} = instructor, invite_attrs) do
@@ -131,9 +83,7 @@ defmodule ProjectDrive.Accounts do
   end
 
   def send_student_invite_email(%StudentInvite{} = student_invite) do
-    student_invite =
-      student_invite
-      |> Repo.preload(:instructor)
+    student_invite = Repo.preload(student_invite, :instructor)
 
     Email.student_invite_email(student_invite)
     |> Mailer.deliver_now()
@@ -145,18 +95,6 @@ defmodule ProjectDrive.Accounts do
       token: UUID.uuid4(),
       expires_at: Timex.shift(Timex.now(), hours: 48)
     }
-  end
-
-  defp has_student_invite_expired(%StudentInvite{} = student_invite) do
-    formatted_now = Timex.format!(Timex.now(), "{RFC3339}")
-    formatted_expires_at = Timex.format!(student_invite.expires_at, "{RFC3339}")
-
-    Logger.info("Student invite expired check. Now: #{formatted_now}, Expires: #{formatted_expires_at}")
-
-    case Timex.compare(Timex.today(), student_invite.expires_at) do
-      -1 -> false
-      _ -> true
-    end
   end
 
   defp publish_event(%StudentInvite{} = student_invite, event_name) do

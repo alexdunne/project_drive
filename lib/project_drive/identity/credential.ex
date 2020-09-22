@@ -1,15 +1,15 @@
-defmodule ProjectDrive.Accounts.Credential do
+defmodule ProjectDrive.Identity.Credential do
   use ProjectDrive.Schema
   import Ecto.Changeset
 
-  alias ProjectDrive.Accounts.User
+  alias ProjectDrive.Identity
 
   schema "credentials" do
     field :email, :string
     field :password, :string
     field :plain_password, :string, virtual: true
 
-    belongs_to :user, User
+    belongs_to :user, Identity.User
 
     timestamps()
   end
@@ -25,9 +25,7 @@ defmodule ProjectDrive.Accounts.Credential do
     |> put_password_hash()
   end
 
-  defp put_password_hash(
-         %Ecto.Changeset{valid?: true, changes: %{plain_password: password}} = changeset
-       ) do
+  defp put_password_hash(%Ecto.Changeset{valid?: true, changes: %{plain_password: password}} = changeset) do
     put_change(changeset, :password, Argon2.hash_pwd_salt(password))
   end
 
