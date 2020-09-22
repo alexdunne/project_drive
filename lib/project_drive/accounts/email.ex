@@ -1,9 +1,9 @@
-defmodule ProjectDrive.Accounts.Email do
+defmodule ProjectDrive.Schedule.Email do
   import Bamboo.Email
 
   require Logger
 
-  alias ProjectDrive.Accounts.StudentInvite
+  alias ProjectDrive.Schedule.StudentInvite
 
   @sender_email Application.fetch_env!(:project_drive, :sender_email)
 
@@ -17,10 +17,7 @@ defmodule ProjectDrive.Accounts.Email do
 
     {:ok, formatted_expires_at} = Timex.format(expires_at, "{WDfull}, {D} {Mshort} {h24}:{m}")
 
-    body =
-      "You've been invited by Instructor #{instructor.name}. Token: #{token}, Expires at: #{
-        formatted_expires_at
-      }"
+    body = "You've been invited by Instructor #{instructor.name}. Token: #{token}, Expires at: #{formatted_expires_at}"
 
     new_email(
       to: email,

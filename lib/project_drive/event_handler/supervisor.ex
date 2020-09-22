@@ -10,7 +10,7 @@ defmodule ProjectDrive.EventHandler.Supervisor do
 
   def init(_arg) do
     children = [
-      worker(ProjectDrive.Accounts.EventHandler, [[name: ProjectDrive.Accounts.EventHandler]])
+      ProjectDrive.Schedule.EventHandler
     ]
 
     supervise(children, strategy: :one_for_one)

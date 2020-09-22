@@ -5,10 +5,30 @@ defmodule ProjectDrive.Schedule do
 
   import Ecto.Query, warn: false
 
-  alias ProjectDrive.{Repo, Schedule}
-  alias ProjectDrive.Schedule.{Event, Instructor, Policy, Student}
+  alias ProjectDrive.{Identity, Repo, Schedule}
+  alias ProjectDrive.Schedule.{Event, Instructor, Student, Policy}
 
   defdelegate authorize(action, user, params), to: Policy
+
+  def get_instructor(id), do: Repo.get(Instructor, id)
+
+  def get_student(id), do: Repo.get(Student, id)
+
+  def instructor_for_user(%Identity.User{} = user) do
+    Repo.get_by(Instructor, user_id: user.id)
+  end
+
+  def create_instructor_for_user(%Identity.User{} = user, attrs) do
+    Ecto.build_assoc(user, :instructor)
+    |> Instructor.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def create_student_for_user(%Identity.User{} = user, %Instructor{} = instructor, attrs) do
+    Ecto.build_assoc(user, :students, %{instructor: instructor})
+    |> Student.changeset(attrs)
+    |> Repo.insert()
+  end
 
   def create_lesson(%Instructor{} = instructor, event_attrs) do
     with :ok <- Bodyguard.permit!(Schedule, :create_lesson, instructor, event_attrs) do
@@ -21,18 +41,5 @@ defmodule ProjectDrive.Schedule do
       |> Event.changeset(attrs)
       |> Repo.insert!()
     end
-  end
-
-  def instructor_for_instructor_account(%ProjectDrive.Accounts.Instructor{} = instructor_account) do
-    %Instructor{id: instructor_account.id}
-  end
-
-  def student_for_student_account(%ProjectDrive.Accounts.Student{} = student_account) do
-    %Student{
-      id: student_account.id,
-      name: student_account.name,
-      email: student_account.email,
-      instructor_id: student_account.instructor_id
-    }
   end
 end

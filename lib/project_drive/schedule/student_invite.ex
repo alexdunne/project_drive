@@ -1,8 +1,8 @@
-defmodule ProjectDrive.Accounts.StudentInvite do
+defmodule ProjectDrive.Schedule.StudentInvite do
   use ProjectDrive.Schema
   import Ecto.Changeset
 
-  alias ProjectDrive.Accounts.{Instructor, StudentInvite}
+  alias ProjectDrive.Schedule.{Instructor, StudentInvite}
 
   require Logger
 
