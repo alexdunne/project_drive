@@ -57,6 +57,7 @@ defmodule ProjectDrive.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:bamboo, "~> 1.5"},
       {:timex, "~> 3.5"},
+      {:ecto_enum, "~> 1.4"},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end

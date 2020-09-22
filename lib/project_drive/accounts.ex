@@ -4,7 +4,7 @@ defmodule ProjectDrive.Accounts do
   """
   import Ecto.Query, warn: false
 
-  alias ProjectDrive.{Repo, Mailer}
+  alias ProjectDrive.{Accounts, Repo, Mailer}
 
   alias ProjectDrive.Accounts.{
     Credential,
@@ -20,13 +20,17 @@ defmodule ProjectDrive.Accounts do
 
   use EventBus.EventSource
 
+  defdelegate authorize(action, user, params), to: Policy
+
   def get_user!(id), do: Repo.get!(User, id)
 
   def get_instructor_for_user!(user_id) do
     Repo.get_by!(Instructor, %{user_id: user_id})
   end
 
-  def get_instructor!(id), do: Repo.get!(Instructor, id)
+  def get_instructor(id), do: Repo.get(Instructor, id)
+
+  def get_student(id), do: Repo.get(Student, id)
 
   def create_instructor(attrs) do
     user_attrs = %{credential: %{email: attrs.email, plain_password: attrs.password}}
@@ -112,7 +116,7 @@ defmodule ProjectDrive.Accounts do
   end
 
   def create_student_invite(%Instructor{} = instructor, invite_attrs) do
-    with :ok <- Bodyguard.permit!(Policy, :create_student_invite, instructor, invite_attrs) do
+    with :ok <- Bodyguard.permit!(Accounts, :create_student_invite, instructor, invite_attrs) do
       student_invites_attrs = build_student_invite_attrs(%{email: invite_attrs.email})
 
       {:ok, student_invite} =
@@ -147,9 +151,7 @@ defmodule ProjectDrive.Accounts do
     formatted_now = Timex.format!(Timex.now(), "{RFC3339}")
     formatted_expires_at = Timex.format!(student_invite.expires_at, "{RFC3339}")
 
-    Logger.info(
-      "Student invite expired check. Now: #{formatted_now}, Expires: #{formatted_expires_at}"
-    )
+    Logger.info("Student invite expired check. Now: #{formatted_now}, Expires: #{formatted_expires_at}")
 
     case Timex.compare(Timex.today(), student_invite.expires_at) do
       -1 -> false

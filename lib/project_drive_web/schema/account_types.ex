@@ -7,6 +7,12 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
     field :email, non_null(:string)
   end
 
+  object :student do
+    field :id, non_null(:id)
+    field :email, non_null(:string)
+    field :name, non_null(:string)
+  end
+
   input_object :create_student_invite_input do
     field :email, non_null(:string)
   end

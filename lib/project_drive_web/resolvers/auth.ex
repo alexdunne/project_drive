@@ -31,6 +31,8 @@ defmodule ProjectDriveWeb.Resolvers.Auth do
     with {:ok, user} <- Accounts.login_with_email_and_password(input.email, input.password),
          {:ok, jwt, _} <- ProjectDrive.Guardian.encode_and_sign(user) do
       {:ok, %{token: jwt, user: %{id: user.id}}}
+    else
+      _ -> {:error, "Invalid credentials"}
     end
   end
 end
