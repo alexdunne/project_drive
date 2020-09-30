@@ -46,11 +46,14 @@ defmodule ProjectDrive.Schedule do
   end
 
   def delete_lesson(%Accounts.Instructor{} = instructor, id) do
-    event = get_event(id)
+    lesson = get_event(id)
 
-    with :ok <- Bodyguard.permit!(Schedule, :delete_lesson, instructor, event) do
-      event
-      |> Repo.delete()
+    with :ok <- Bodyguard.permit!(Schedule, :delete_lesson, instructor, lesson) do
+      {:ok, lesson} = Repo.delete(lesson)
+
+      publish_event(lesson, :"schedule.lesson.deleted")
+
+      {:ok, lesson}
     end
   end
 
@@ -63,6 +66,17 @@ defmodule ProjectDrive.Schedule do
       ends_at: lesson.ends_at
     })
     |> Email.send_new_lesson_notification()
+    |> Mailer.deliver_now()
+  end
+
+  def send_lesson_cancelled_notification(%ScheduleEvent{} = lesson) do
+    student = Accounts.get_student(lesson.student_id)
+
+    Email.LessonCancelledNotificationData.new(%{
+      student_email: student.email,
+      starts_at: lesson.starts_at
+    })
+    |> Email.send_lesson_cancelled_notification()
     |> Mailer.deliver_now()
   end
 

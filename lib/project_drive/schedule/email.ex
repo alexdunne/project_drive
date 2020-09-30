@@ -18,6 +18,18 @@ defmodule ProjectDrive.Schedule.Email do
     end
   end
 
+  defmodule LessonCancelledNotificationData do
+    @enforce_keys [:student_email, :starts_at]
+    defstruct [:student_email, :starts_at]
+
+    def new(attrs) do
+      %LessonCancelledNotificationData{
+        student_email: attrs.student_email,
+        starts_at: attrs.starts_at
+      }
+    end
+  end
+
   def send_new_lesson_notification(%NewLessonNotificationData{} = data) do
     Logger.info(fn ->
       Logger.info("Creating a new lesson notification for:")
@@ -35,6 +47,25 @@ defmodule ProjectDrive.Schedule.Email do
       to: data.student_email,
       from: @sender_email,
       subject: "Lesson booked confirmation",
+      html_body: body,
+      text_body: body
+    )
+  end
+
+  def send_lesson_cancelled_notification(%LessonCancelledNotificationData{} = data) do
+    Logger.info(fn ->
+      Logger.info("Creating a lesson cancelled notification for:")
+      inspect(data)
+    end)
+
+    {:ok, formatted_lesson_starts_at} = Timex.format(data.starts_at, "{WDfull}, {D} {Mshort} at {h24}:{m}")
+
+    body = "Your instructor has cancelled your #{formatted_lesson_starts_at} lesson."
+
+    new_email(
+      to: data.student_email,
+      from: @sender_email,
+      subject: "Lesson #{formatted_lesson_starts_at} cancelled",
       html_body: body,
       text_body: body
     )
