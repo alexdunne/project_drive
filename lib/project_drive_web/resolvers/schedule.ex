@@ -2,9 +2,17 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
   alias ProjectDrive.{Accounts, Schedule}
 
   def create_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
-    lesson =
+    {:ok, lesson} =
       Accounts.get_instructor_for_user!(user.id)
       |> Schedule.create_lesson(input)
+
+    {:ok, %{lesson: lesson}}
+  end
+
+  def update_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
+    {:ok, lesson} =
+      Accounts.get_instructor_for_user!(user.id)
+      |> Schedule.update_lesson(input)
 
     {:ok, %{lesson: lesson}}
   end

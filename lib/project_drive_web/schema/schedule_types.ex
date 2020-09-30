@@ -14,6 +14,13 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :student_id, non_null(:id)
   end
 
+  input_object :update_lesson_input do
+    field :id, non_null(:id)
+    field :starts_at, :datetime
+    field :ends_at, :datetime
+    field :notes, :string
+  end
+
   object :event do
     field :id, non_null(:id)
     field :starts_at, non_null(:datetime)
@@ -30,11 +37,21 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :lesson, :event
   end
 
+  object :update_lesson_input_payload do
+    field :lesson, :event
+  end
+
   object :schedule_mutations do
     field :create_lesson, :create_lesson_input_payload do
       arg(:input, non_null(:create_lesson_input))
 
       resolve(&Resolvers.Schedule.create_lesson/3)
+    end
+
+    field :update_lesson, :update_lesson_input_payload do
+      arg(:input, non_null(:update_lesson_input))
+
+      resolve(&Resolvers.Schedule.update_lesson/3)
     end
   end
 end
