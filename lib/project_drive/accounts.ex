@@ -4,7 +4,7 @@ defmodule ProjectDrive.Accounts do
   """
   import Ecto.Query, warn: false
 
-  alias ProjectDrive.{Accounts, Identity, Repo, Mailer}
+  alias ProjectDrive.{Accounts, Identity, Mailer, Repo}
   alias ProjectDrive.Accounts.{Email, Instructor, Policy, Student, StudentInvite}
 
   require Logger

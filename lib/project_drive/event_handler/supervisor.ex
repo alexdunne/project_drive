@@ -8,11 +8,13 @@ defmodule ProjectDrive.EventHandler.Supervisor do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end
 
+  @impl true
   def init(_arg) do
     children = [
-      worker(ProjectDrive.Accounts.EventHandler, [[name: ProjectDrive.Accounts.EventHandler]])
+      ProjectDrive.Accounts.EventHandler,
+      ProjectDrive.Schedule.EventHandler
     ]
 
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
