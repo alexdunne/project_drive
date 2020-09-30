@@ -34,4 +34,13 @@ defmodule ProjectDrive.Schedule do
       |> Repo.update()
     end
   end
+
+  def delete_lesson(%Accounts.Instructor{} = instructor, id) do
+    event = get_event(id)
+
+    with :ok <- Bodyguard.permit!(Schedule, :delete_lesson, instructor, event) do
+      event
+      |> Repo.delete()
+    end
+  end
 end
