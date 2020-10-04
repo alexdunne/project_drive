@@ -37,7 +37,12 @@ config :project_drive, ProjectDrive.Guardian,
 
 # Configure EventBus
 config :event_bus,
-  topics: [:"accounts.student_invite.created", :"schedule.lesson.created", :"schedule.lesson.deleted"]
+  topics: [
+    :"accounts.student_invite.created",
+    :"schedule.lesson.created",
+    :"schedule.lesson.updated",
+    :"schedule.lesson.deleted"
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

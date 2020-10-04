@@ -36,12 +36,17 @@ defmodule ProjectDrive.Schedule do
   end
 
   def update_lesson(%Accounts.Instructor{} = instructor, %{id: event_id} = lesson_attrs) do
-    event = get_event(event_id)
+    lesson = get_event(event_id)
 
-    with :ok <- Bodyguard.permit!(Schedule, :update_lesson, instructor, event) do
-      event
-      |> ScheduleEvent.changeset(lesson_attrs)
-      |> Repo.update()
+    with :ok <- Bodyguard.permit!(Schedule, :update_lesson, instructor, lesson) do
+      {:ok, updated_lesson} =
+        lesson
+        |> ScheduleEvent.changeset(lesson_attrs)
+        |> Repo.update()
+
+      publish_event(updated_lesson, lesson, :"schedule.lesson.updated")
+
+      {:ok, updated_lesson}
     end
   end
 
@@ -65,7 +70,23 @@ defmodule ProjectDrive.Schedule do
       starts_at: lesson.starts_at,
       ends_at: lesson.ends_at
     })
-    |> Email.send_new_lesson_notification()
+    |> Email.build_notification_email()
+    |> Mailer.deliver_now()
+  end
+
+  def send_lesson_rescheduled_notification(%ScheduleEvent{} = updated_lesson, %ScheduleEvent{} = original_lesson) do
+    student = Accounts.get_student(updated_lesson.student_id)
+
+    IO.puts(original_lesson.starts_at)
+    IO.puts(updated_lesson.starts_at)
+
+    Email.LessonRescheduledNotificationData.new(%{
+      student_email: student.email,
+      previous_starts_at: original_lesson.starts_at,
+      new_starts_at: updated_lesson.starts_at,
+      new_ends_at: updated_lesson.ends_at
+    })
+    |> Email.build_notification_email()
     |> Mailer.deliver_now()
   end
 
@@ -76,13 +97,23 @@ defmodule ProjectDrive.Schedule do
       student_email: student.email,
       starts_at: lesson.starts_at
     })
-    |> Email.send_lesson_cancelled_notification()
+    |> Email.build_notification_email()
     |> Mailer.deliver_now()
   end
 
   defp publish_event(%ScheduleEvent{type: :lesson} = lesson, event_name) do
     EventSource.notify %{id: UUID.uuid4(), topic: event_name} do
       %{lesson: lesson}
+    end
+  end
+
+  defp publish_event(
+         %ScheduleEvent{type: :lesson} = updated_lesson,
+         %ScheduleEvent{type: :lesson} = original_lesson,
+         event_name
+       ) do
+    EventSource.notify %{id: UUID.uuid4(), topic: event_name} do
+      %{updated_lesson: updated_lesson, original_lesson: original_lesson}
     end
   end
 end

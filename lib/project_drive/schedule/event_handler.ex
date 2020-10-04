@@ -32,6 +32,18 @@ defmodule ProjectDrive.Schedule.EventHandler do
     {:noreply, state}
   end
 
+  def handle_cast({:"schedule.lesson.updated", _id} = event_shadow, state) do
+    %{data: %{updated_lesson: updated_lesson, original_lesson: original_lesson}} = EventBus.fetch_event(event_shadow)
+
+    if is_lesson_rescheduled(updated_lesson, original_lesson) do
+      Schedule.send_lesson_rescheduled_notification(updated_lesson, original_lesson)
+    end
+
+    EventBus.mark_as_completed({__MODULE__, event_shadow})
+
+    {:noreply, state}
+  end
+
   def handle_cast({:"schedule.lesson.deleted", _id} = event_shadow, state) do
     %{data: %{lesson: lesson}} = EventBus.fetch_event(event_shadow)
 
@@ -40,5 +52,9 @@ defmodule ProjectDrive.Schedule.EventHandler do
     EventBus.mark_as_completed({__MODULE__, event_shadow})
 
     {:noreply, state}
+  end
+
+  defp is_lesson_rescheduled(%Schedule.Event{} = updated_lesson, %Schedule.Event{} = original_lesson) do
+    updated_lesson.starts_at != original_lesson.starts_at || updated_lesson.ends_at != original_lesson.ends_at
   end
 end
