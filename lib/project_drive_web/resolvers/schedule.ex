@@ -12,7 +12,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
   def update_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
     {:ok, lesson} =
       Accounts.get_instructor_for_user!(user.id)
-      |> Schedule.update_lesson(input)
+      |> Schedule.update_lesson(input.id, input)
 
     {:ok, %{lesson: lesson}}
   end
@@ -20,7 +20,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
   def reschedule_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
     {:ok, lesson} =
       Accounts.get_instructor_for_user!(user.id)
-      |> Schedule.update_lesson(input)
+      |> Schedule.update_lesson(input.id, input)
 
     {:ok, %{lesson: lesson}}
   end

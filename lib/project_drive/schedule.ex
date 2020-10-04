@@ -35,7 +35,7 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def update_lesson(%Accounts.Instructor{} = instructor, %{id: event_id} = lesson_attrs) do
+  def update_lesson(%Accounts.Instructor{} = instructor, event_id, lesson_attrs) do
     lesson = get_event(event_id)
 
     with :ok <- Bodyguard.permit!(Schedule, :update_lesson, instructor, lesson) do
