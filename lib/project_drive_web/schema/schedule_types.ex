@@ -21,6 +21,12 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :notes, :string
   end
 
+  input_object :reschedule_lesson_input do
+    field :id, non_null(:id)
+    field :starts_at, non_null(:datetime)
+    field :ends_at, non_null(:datetime)
+  end
+
   input_object :delete_lesson_input do
     field :id, non_null(:id)
   end
@@ -45,6 +51,10 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :lesson, :event
   end
 
+  object :reschedule_lesson_payload do
+    field :lesson, :event
+  end
+
   object :delete_lesson_payload do
     field :id, non_null(:id)
   end
@@ -60,6 +70,12 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
       arg(:input, non_null(:update_lesson_input))
 
       resolve(&Resolvers.Schedule.update_lesson/3)
+    end
+
+    field :reschedule_lesson, :reschedule_lesson_payload do
+      arg(:input, non_null(:reschedule_lesson_input))
+
+      resolve(&Resolvers.Schedule.reschedule_lesson/3)
     end
 
     field :delete_lesson, :delete_lesson_payload do

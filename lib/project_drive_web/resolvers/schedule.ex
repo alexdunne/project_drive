@@ -17,6 +17,14 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     {:ok, %{lesson: lesson}}
   end
 
+  def reschedule_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
+    {:ok, lesson} =
+      Accounts.get_instructor_for_user!(user.id)
+      |> Schedule.update_lesson(input)
+
+    {:ok, %{lesson: lesson}}
+  end
+
   def delete_lesson(_parent, %{input: %{id: id}}, %{context: %{user: user}}) do
     {:ok, lesson} =
       Accounts.get_instructor_for_user!(user.id)
