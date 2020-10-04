@@ -77,9 +77,6 @@ defmodule ProjectDrive.Schedule do
   def send_lesson_rescheduled_notification(%ScheduleEvent{} = updated_lesson, %ScheduleEvent{} = original_lesson) do
     student = Accounts.get_student(updated_lesson.student_id)
 
-    IO.puts(original_lesson.starts_at)
-    IO.puts(updated_lesson.starts_at)
-
     Email.LessonRescheduledNotificationData.new(%{
       student_email: student.email,
       previous_starts_at: original_lesson.starts_at,
