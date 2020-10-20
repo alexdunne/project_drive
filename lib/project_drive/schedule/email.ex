@@ -1,4 +1,7 @@
 defmodule ProjectDrive.Schedule.Email do
+  @moduledoc """
+  Defines the different email types and builds the email structures
+  """
   import Bamboo.Email
 
   require Logger
@@ -6,6 +9,10 @@ defmodule ProjectDrive.Schedule.Email do
   @sender_email Application.fetch_env!(:project_drive, :sender_email)
 
   defmodule NewLessonNotificationData do
+    @moduledoc """
+    Holds the required data for a new lesson notification email
+    """
+
     @enforce_keys [:student_email, :starts_at, :ends_at]
     defstruct [:student_email, :starts_at, :ends_at]
 
@@ -19,6 +26,10 @@ defmodule ProjectDrive.Schedule.Email do
   end
 
   defmodule LessonRescheduledNotificationData do
+    @moduledoc """
+    Holds the required data for a lesson rescheduled notification email
+    """
+
     @enforce_keys [:student_email, :previous_starts_at, :new_starts_at, :new_ends_at]
     defstruct [:student_email, :previous_starts_at, :new_starts_at, :new_ends_at]
 
@@ -33,11 +44,31 @@ defmodule ProjectDrive.Schedule.Email do
   end
 
   defmodule LessonCancelledNotificationData do
+    @moduledoc """
+    Holds the required data for a lesson cancelled notification email
+    """
+
     @enforce_keys [:student_email, :starts_at]
     defstruct [:student_email, :starts_at]
 
     def new(attrs) do
       %LessonCancelledNotificationData{
+        student_email: attrs.student_email,
+        starts_at: attrs.starts_at
+      }
+    end
+  end
+
+  defmodule LessonReminderData do
+    @moduledoc """
+    Holds the required data for a lesson reminder notification email
+    """
+
+    @enforce_keys [:student_email, :starts_at]
+    defstruct [:student_email, :starts_at]
+
+    def new(attrs) do
+      %LessonReminderData{
         student_email: attrs.student_email,
         starts_at: attrs.starts_at
       }
@@ -105,6 +136,25 @@ defmodule ProjectDrive.Schedule.Email do
       to: data.student_email,
       from: @sender_email,
       subject: "Lesson #{formatted_lesson_starts_at} cancelled",
+      html_body: body,
+      text_body: body
+    )
+  end
+
+  def build_notification_email(%LessonReminderData{} = data) do
+    Logger.info(fn ->
+      Logger.info("Creating a lesson reminder notification for:")
+      inspect(data)
+    end)
+
+    {:ok, formatted_lesson_starts_at} = Timex.format(data.starts_at, "{WDfull}, {D} {Mshort} at {h24}:{m}")
+
+    body = "You have a lesson scheduled for #{formatted_lesson_starts_at}"
+
+    new_email(
+      to: data.student_email,
+      from: @sender_email,
+      subject: "Lesson reminder",
       html_body: body,
       text_body: body
     )

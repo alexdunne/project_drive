@@ -17,7 +17,9 @@ defmodule ProjectDrive.Application do
       ProjectDriveWeb.Endpoint,
       # Start a worker by calling: ProjectDrive.Worker.start_link(arg)
       # {ProjectDrive.Worker, arg}
-      ProjectDrive.EventHandler.Supervisor
+      ProjectDrive.EventHandler.Supervisor,
+      # Start the Oban instances
+      {Oban, oban_config()}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -31,5 +33,9 @@ defmodule ProjectDrive.Application do
   def config_change(changed, _new, removed) do
     ProjectDriveWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp oban_config do
+    Application.get_env(:project_drive, Oban)
   end
 end

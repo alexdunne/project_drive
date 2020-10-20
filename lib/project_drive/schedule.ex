@@ -17,6 +17,15 @@ defmodule ProjectDrive.Schedule do
 
   def get_event(id), do: Repo.get(ScheduleEvent, id)
 
+  def get_lessons_which_start_at(starts_at) do
+    query =
+      from ev in ScheduleEvent,
+        where: ev.starts_at == ^starts_at,
+        where: ev.type == ^:lesson
+
+    Repo.all(query)
+  end
+
   def create_lesson(%Accounts.Instructor{} = instructor, lesson_attrs) do
     with :ok <- Bodyguard.permit!(Schedule, :create_lesson, instructor, lesson_attrs) do
       attrs =
@@ -91,6 +100,17 @@ defmodule ProjectDrive.Schedule do
     student = Accounts.get_student(lesson.student_id)
 
     Email.LessonCancelledNotificationData.new(%{
+      student_email: student.email,
+      starts_at: lesson.starts_at
+    })
+    |> Email.build_notification_email()
+    |> Mailer.deliver_now()
+  end
+
+  def send_lesson_reminder_notification(%ScheduleEvent{} = lesson) do
+    student = Accounts.get_student(lesson.student_id)
+
+    Email.LessonReminderData.new(%{
       student_email: student.email,
       starts_at: lesson.starts_at
     })

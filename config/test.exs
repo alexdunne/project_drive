@@ -20,3 +20,5 @@ config :project_drive, ProjectDriveWeb.Endpoint,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :project_drive, Oban, crontab: false, queues: false, plugins: false
