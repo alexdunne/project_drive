@@ -4,6 +4,7 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
   alias ProjectDriveWeb.{Resolvers}
 
   object :student_invite do
+    field :name, non_null(:string)
     field :email, non_null(:string)
   end
 
@@ -15,9 +16,11 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
 
   input_object :create_student_invite_input do
     field :email, non_null(:string)
+    field :name, non_null(:string)
   end
 
   object :student_invite_payload do
+    field :student, :student
     field :student_invite, :student_invite
   end
 

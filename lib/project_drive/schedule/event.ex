@@ -39,9 +39,12 @@ defmodule ProjectDrive.Schedule.Event do
         where: ^starts_at < ev.ends_at and ^ends_at > ev.starts_at,
         select: count(ev.id)
 
-    unless is_nil(id) do
-      query = from ev in query, where: ev.id != ^id
-    end
+    query =
+      if is_nil(id) do
+        query
+      else
+        from ev in query, where: ev.id != ^id
+      end
 
     conflicts = changeset.repo.one(query)
 

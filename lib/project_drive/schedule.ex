@@ -74,48 +74,56 @@ defmodule ProjectDrive.Schedule do
   def send_new_lesson_notification(%ScheduleEvent{} = lesson) do
     student = Accounts.get_student(lesson.student_id)
 
-    Email.NewLessonNotificationData.new(%{
-      student_email: student.email,
-      starts_at: lesson.starts_at,
-      ends_at: lesson.ends_at
-    })
-    |> Email.build_notification_email()
-    |> Mailer.deliver_now()
+    if student.email_confirmation_state == "confirmed" do
+      Email.NewLessonNotificationData.new(%{
+        student_email: student.email,
+        starts_at: lesson.starts_at,
+        ends_at: lesson.ends_at
+      })
+      |> Email.build_notification_email()
+      |> Mailer.deliver_now()
+    end
   end
 
   def send_lesson_rescheduled_notification(%ScheduleEvent{} = updated_lesson, %ScheduleEvent{} = original_lesson) do
     student = Accounts.get_student(updated_lesson.student_id)
 
-    Email.LessonRescheduledNotificationData.new(%{
-      student_email: student.email,
-      previous_starts_at: original_lesson.starts_at,
-      new_starts_at: updated_lesson.starts_at,
-      new_ends_at: updated_lesson.ends_at
-    })
-    |> Email.build_notification_email()
-    |> Mailer.deliver_now()
+    if student.email_confirmation_state == "confirmed" do
+      Email.LessonRescheduledNotificationData.new(%{
+        student_email: student.email,
+        previous_starts_at: original_lesson.starts_at,
+        new_starts_at: updated_lesson.starts_at,
+        new_ends_at: updated_lesson.ends_at
+      })
+      |> Email.build_notification_email()
+      |> Mailer.deliver_now()
+    end
   end
 
   def send_lesson_cancelled_notification(%ScheduleEvent{} = lesson) do
     student = Accounts.get_student(lesson.student_id)
 
-    Email.LessonCancelledNotificationData.new(%{
-      student_email: student.email,
-      starts_at: lesson.starts_at
-    })
-    |> Email.build_notification_email()
-    |> Mailer.deliver_now()
+    if student.email_confirmation_state == "confirmed" do
+      Email.LessonCancelledNotificationData.new(%{
+        student_email: student.email,
+        starts_at: lesson.starts_at
+      })
+      |> Email.build_notification_email()
+      |> Mailer.deliver_now()
+    end
   end
 
   def send_lesson_reminder_notification(%ScheduleEvent{} = lesson) do
     student = Accounts.get_student(lesson.student_id)
 
-    Email.LessonReminderData.new(%{
-      student_email: student.email,
-      starts_at: lesson.starts_at
-    })
-    |> Email.build_notification_email()
-    |> Mailer.deliver_now()
+    if student.email_confirmation_state == "confirmed" do
+      Email.LessonReminderData.new(%{
+        student_email: student.email,
+        starts_at: lesson.starts_at
+      })
+      |> Email.build_notification_email()
+      |> Mailer.deliver_now()
+    end
   end
 
   defp publish_event(%ScheduleEvent{type: :lesson} = lesson, event_name) do

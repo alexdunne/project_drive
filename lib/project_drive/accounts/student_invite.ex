@@ -7,6 +7,7 @@ defmodule ProjectDrive.Accounts.StudentInvite do
   require Logger
 
   schema "student_invites" do
+    field :name, :string
     field :email, :string
     field :token, :string
     field :expires_at, :utc_datetime
@@ -19,8 +20,8 @@ defmodule ProjectDrive.Accounts.StudentInvite do
   @doc false
   def changeset(student_invite, attrs) do
     student_invite
-    |> cast(attrs, [:email, :token, :expires_at])
-    |> validate_required([:email, :token, :expires_at])
+    |> cast(attrs, [:name, :email, :token, :expires_at])
+    |> validate_required([:name, :email, :token, :expires_at])
     |> validate_is_future_date(:expires_at)
     |> unique_constraint([:email, :instructor_id])
   end
