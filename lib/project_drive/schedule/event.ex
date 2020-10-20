@@ -21,6 +21,8 @@ defmodule ProjectDrive.Schedule.Event do
     |> cast(attrs, [:starts_at, :ends_at, :notes, :type, :instructor_id, :student_id])
     |> validate_required([:starts_at, :ends_at, :notes, :type, :instructor_id, :student_id])
     |> foreign_key_constraint(:student_id)
+    |> set_seconds_to_zero(:starts_at)
+    |> set_seconds_to_zero(:ends_at)
     |> prepare_changes(fn changeset ->
       changeset
       |> validate_no_conflicts()
@@ -50,5 +52,11 @@ defmodule ProjectDrive.Schedule.Event do
     else
       changeset
     end
+  end
+
+  defp set_seconds_to_zero(changeset, field) do
+    field_value = get_field(changeset, field)
+
+    put_change(changeset, field, Timex.set(field_value, second: 0))
   end
 end
