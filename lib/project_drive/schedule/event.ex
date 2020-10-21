@@ -23,10 +23,23 @@ defmodule ProjectDrive.Schedule.Event do
     |> foreign_key_constraint(:student_id)
     |> set_seconds_to_zero(:starts_at)
     |> set_seconds_to_zero(:ends_at)
+    |> validate_is_future_event()
     |> prepare_changes(fn changeset ->
       changeset
       |> validate_no_conflicts()
     end)
+  end
+
+  defp validate_is_future_event(changeset) do
+    starts_at = get_field(changeset, :starts_at)
+
+    case Timex.compare(Timex.now(), starts_at) do
+      -1 ->
+        changeset
+
+      _ ->
+        add_error(changeset, :starts_at, "must be in the future")
+    end
   end
 
   defp validate_no_conflicts(changeset) do
