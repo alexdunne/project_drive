@@ -37,28 +37,36 @@ defmodule ProjectDrive.Accounts do
   end
 
   def create_instructor(attrs) do
-    {:ok, %{user: user}} =
-      Multi.new()
-      |> Multi.insert(:user, Identity.create_new_user_changeset(attrs))
-      |> Multi.run(:instructor, fn repo, %{user: user} ->
-        build_new_instructor_changeset(user, attrs)
-        |> repo.insert()
-      end)
-      |> Repo.transaction()
-
-    {:ok, user}
+    Multi.new()
+    |> Multi.insert(:user, Identity.create_new_user_changeset(attrs))
+    |> Multi.run(:instructor, fn repo, %{user: user} ->
+      build_new_instructor_changeset(user, attrs)
+      |> repo.insert()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{user: user}} -> {:ok, user}
+      {:error, _operation, changeset, _changes} -> {:error, changeset}
+      other -> other
+    end
   end
 
   def create_student(attrs) do
-    with student_invite <- get_student_invite_by_token(attrs.token) do
-      instructor = get_instructor(student_invite.instructor_id)
-      student = get_student_by_email(instructor, student_invite.email)
+    case get_student_invite_by_token(attrs.token) do
+      nil ->
+        {:error, :not_found}
 
-      {:ok, %{user: user}} =
+      student_invite ->
+        instructor = get_instructor(student_invite.instructor_id)
+        student = get_student_by_email(instructor, student_invite.email)
+
         Multi.new()
         |> Multi.insert(
           :user,
-          Identity.create_new_user_changeset(%{email: student_invite.email, password: attrs.password})
+          Identity.create_new_user_changeset(%{
+            email: student_invite.email,
+            password: attrs.password
+          })
         )
         |> Multi.run(:student, fn repo, %{user: user} ->
           student
@@ -76,26 +84,33 @@ defmodule ProjectDrive.Accounts do
           |> repo.update()
         end)
         |> Repo.transaction()
-
-      {:ok, user}
+        |> case do
+          {:ok, %{user: user}} -> {:ok, user}
+          {:error, _operation, changeset, _changes} -> {:error, changeset}
+          other -> other
+        end
     end
   end
 
   def create_student_invite(%Instructor{} = instructor, invite_attrs) do
-    with :ok <- Bodyguard.permit!(Accounts, :create_student_invite, instructor, invite_attrs) do
-      {:ok, %{student_invite: student_invite, student: student}} =
-        Multi.new()
-        |> Multi.insert(:student_invite, build_student_invite_changeset(instructor, invite_attrs))
-        |> Multi.run(:student, fn repo, %{student_invite: student_invite} ->
-          Ecto.build_assoc(instructor, :students)
-          |> Student.changeset(%{name: student_invite.name, email: student_invite.email})
-          |> repo.insert()
-        end)
-        |> Repo.transaction()
+    Multi.new()
+    |> Multi.insert(:student_invite, build_student_invite_changeset(instructor, invite_attrs))
+    |> Multi.run(:student, fn repo, %{student_invite: student_invite} ->
+      Ecto.build_assoc(instructor, :students)
+      |> Student.changeset(%{name: student_invite.name, email: student_invite.email})
+      |> repo.insert()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{student_invite: student_invite, student: student}} ->
+        publish_event(student_invite, :"accounts.student_invite.created")
+        {:ok, student_invite, student}
 
-      publish_event(student_invite, :"accounts.student_invite.created")
+      {:error, _operation, changeset, _changes} ->
+        {:error, changeset}
 
-      {:ok, student_invite, student}
+      other ->
+        other
     end
   end
 

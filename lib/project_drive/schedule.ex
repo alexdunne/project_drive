@@ -27,47 +27,47 @@ defmodule ProjectDrive.Schedule do
   end
 
   def create_lesson(%Accounts.Instructor{} = instructor, lesson_attrs) do
-    with :ok <- Bodyguard.permit!(Schedule, :create_lesson, instructor, lesson_attrs) do
-      attrs =
-        lesson_attrs
-        |> Map.put(:instructor_id, instructor.id)
-        |> Map.put(:type, :lesson)
+    attrs =
+      lesson_attrs
+      |> Map.put(:instructor_id, instructor.id)
+      |> Map.put(:type, :lesson)
 
-      {:ok, lesson} =
-        %ScheduleEvent{}
-        |> ScheduleEvent.changeset(attrs)
-        |> Repo.insert()
+    %ScheduleEvent{}
+    |> ScheduleEvent.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, lesson} ->
+        publish_event(lesson, :"schedule.lesson.created")
+        {:ok, lesson}
 
-      publish_event(lesson, :"schedule.lesson.created")
-
-      {:ok, lesson}
+      other ->
+        other
     end
   end
 
-  def update_lesson(%Accounts.Instructor{} = instructor, event_id, lesson_attrs) do
-    lesson = get_event(event_id)
+  def update_lesson(%ScheduleEvent{} = lesson, lesson_attrs) do
+    lesson
+    |> ScheduleEvent.changeset(lesson_attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, updated_lesson} ->
+        publish_event(updated_lesson, lesson, :"schedule.lesson.updated")
+        {:ok, updated_lesson}
 
-    with :ok <- Bodyguard.permit!(Schedule, :update_lesson, instructor, lesson) do
-      {:ok, updated_lesson} =
-        lesson
-        |> ScheduleEvent.changeset(lesson_attrs)
-        |> Repo.update()
-
-      publish_event(updated_lesson, lesson, :"schedule.lesson.updated")
-
-      {:ok, updated_lesson}
+      other ->
+        other
     end
   end
 
-  def delete_lesson(%Accounts.Instructor{} = instructor, id) do
-    lesson = get_event(id)
+  def delete_lesson(%ScheduleEvent{} = lesson) do
+    Repo.delete(lesson)
+    |> case do
+      {:ok, lesson} ->
+        publish_event(lesson, :"schedule.lesson.deleted")
+        {:ok, lesson}
 
-    with :ok <- Bodyguard.permit!(Schedule, :delete_lesson, instructor, lesson) do
-      {:ok, lesson} = Repo.delete(lesson)
-
-      publish_event(lesson, :"schedule.lesson.deleted")
-
-      {:ok, lesson}
+      other ->
+        other
     end
   end
 

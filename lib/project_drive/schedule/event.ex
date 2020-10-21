@@ -79,8 +79,8 @@ defmodule ProjectDrive.Schedule.Event do
 
     if conflicts > 0 do
       changeset
-      |> add_error(:starts_at, "The provided times conflict with existing events")
-      |> add_error(:starts_at, "The provided times conflict with existing events")
+      |> add_error(:starts_at, "conflicts with existing events")
+      |> add_error(:ends_at, "conflicts with existing events")
     else
       changeset
     end

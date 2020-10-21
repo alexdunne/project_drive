@@ -5,9 +5,7 @@ defmodule ProjectDrive.Schedule.Policy do
 
   alias ProjectDrive.{Accounts, Schedule}
 
-  def authorize(:create_lesson, %Accounts.Instructor{} = instructor, %{student_id: student_id}) do
-    student = Accounts.get_student(student_id)
-
+  def authorize(:create_lesson, %Accounts.Instructor{} = instructor, %Accounts.Student{} = student) do
     instructor.id == student.instructor_id
   end
 
