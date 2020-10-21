@@ -19,7 +19,7 @@ defmodule ProjectDrive.Schedule.Event do
   def changeset(event, attrs) do
     event
     |> cast(attrs, [:starts_at, :ends_at, :notes, :type, :instructor_id, :student_id])
-    |> validate_required([:starts_at, :ends_at, :notes, :type, :instructor_id, :student_id])
+    |> validate_required([:starts_at, :ends_at, :type, :instructor_id, :student_id])
     |> foreign_key_constraint(:student_id)
     |> set_seconds_to_zero(:starts_at)
     |> set_seconds_to_zero(:ends_at)
