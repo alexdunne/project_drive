@@ -6,12 +6,7 @@ defmodule ProjectDriveWeb.Resolvers.Auth do
   alias ProjectDrive.{Accounts, Guardian, Identity}
 
   def register(_parent, %{input: input}, _context) do
-    Accounts.create_instructor(%{
-      name: input.name,
-      email: input.email,
-      password: input.password
-    })
-    |> case do
+    case Accounts.create_instructor(%{name: input.name, email: input.email, password: input.password}) do
       {:ok, user} ->
         {:ok, jwt, _} = Guardian.encode_and_sign(user)
         {:ok, %{token: jwt, user: %{id: user.id}}}
@@ -22,12 +17,7 @@ defmodule ProjectDriveWeb.Resolvers.Auth do
   end
 
   def register_student_invite(_parent, %{input: input}, _context) do
-    Accounts.create_student(%{
-      name: input.name,
-      token: input.token,
-      password: input.password
-    })
-    |> case do
+    case Accounts.create_student(%{name: input.name, token: input.token, password: input.password}) do
       {:ok, user} ->
         {:ok, jwt, _} = Guardian.encode_and_sign(user)
         {:ok, %{token: jwt, user: %{id: user.id}}}
