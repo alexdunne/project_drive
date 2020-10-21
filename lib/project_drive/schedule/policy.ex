@@ -1,4 +1,6 @@
 defmodule ProjectDrive.Schedule.Policy do
+  @moduledoc false
+
   @behaviour Bodyguard.Policy
 
   alias ProjectDrive.{Accounts, Schedule}

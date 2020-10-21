@@ -1,4 +1,6 @@
 defmodule ProjectDrive.Accounts.Policy do
+  @moduledoc false
+
   @behaviour Bodyguard.Policy
 
   alias ProjectDrive.Accounts.Instructor

@@ -1,4 +1,6 @@
 defmodule ProjectDrive.Schedule.Event do
+  @moduledoc false
+
   use ProjectDrive.Schema
   import Ecto.{Changeset, Query}
 

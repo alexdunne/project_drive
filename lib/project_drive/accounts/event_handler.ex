@@ -1,4 +1,8 @@
 defmodule ProjectDrive.Accounts.EventHandler do
+  @moduledoc """
+  Handles account related events
+  """
+
   use GenServer
 
   require Logger

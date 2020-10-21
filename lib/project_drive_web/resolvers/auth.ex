@@ -1,4 +1,8 @@
 defmodule ProjectDriveWeb.Resolvers.Auth do
+  @moduledoc """
+  Resolvers for auth schema types
+  """
+
   alias ProjectDrive.{Accounts, Guardian, Identity}
 
   def register(_parent, %{input: input}, _context) do

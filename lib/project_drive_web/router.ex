@@ -1,4 +1,8 @@
 defmodule ProjectDriveWeb.Router do
+  @moduledoc """
+  Router configuration
+  """
+
   use ProjectDriveWeb, :router
 
   pipeline :browser do

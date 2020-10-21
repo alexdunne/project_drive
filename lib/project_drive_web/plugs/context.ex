@@ -1,4 +1,10 @@
 defmodule ProjectDriveWeb.Plugs.Context do
+  @moduledoc """
+  Context Plug attaches augments the context based to all resolvers
+
+  The is useful for attaching request specific information such as the current user
+  """
+
   @behaviour Plug
 
   import Plug.Conn

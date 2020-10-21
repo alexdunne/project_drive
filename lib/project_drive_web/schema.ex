@@ -1,4 +1,11 @@
 defmodule ProjectDriveWeb.Schema do
+  @moduledoc """
+  Root of the GraphQL schema.
+
+  This module is responsible for merging the fields for each of the area types
+  into a single schema
+  """
+
   use Absinthe.Schema
 
   alias ProjectDriveWeb.{Schema}

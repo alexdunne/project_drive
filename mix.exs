@@ -58,7 +58,7 @@ defmodule ProjectDrive.MixProject do
       {:bamboo, "~> 1.5"},
       {:timex, "~> 3.5"},
       {:ecto_enum, "~> 1.4"},
-      {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.5.0-rc.2", only: [:dev, :test], runtime: false},
       {:oban, "~> 2.2"},
       {:machinery, "~> 1.0.0"}
     ]

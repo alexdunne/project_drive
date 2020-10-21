@@ -1,4 +1,8 @@
 defmodule ProjectDriveWeb.Resolvers.Account do
+  @moduledoc """
+  Resolvers for account schema types
+  """
+
   alias ProjectDrive.Accounts
 
   def create_student_invite(_parent, %{input: attrs}, %{context: %{user: user}}) do

@@ -1,4 +1,8 @@
 defmodule ProjectDriveWeb.Resolvers.Schedule do
+  @moduledoc """
+  Resolvers for schedule schema types
+  """
+
   alias ProjectDrive.{Accounts, Schedule}
 
   def create_lesson(_parent, %{input: input}, %{context: %{user: user}}) do

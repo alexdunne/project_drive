@@ -1,4 +1,8 @@
 defmodule ProjectDrive.Guardian do
+  @moduledoc """
+  Provides methods to store and retried user information to and from a JWT
+  """
+
   use Guardian, otp_app: :project_drive
 
   alias ProjectDrive.Identity

@@ -1,4 +1,6 @@
 defmodule ProjectDriveWeb.Schema.AccountTypes do
+  @moduledoc false
+
   use Absinthe.Schema.Notation
 
   alias ProjectDriveWeb.{Resolvers}

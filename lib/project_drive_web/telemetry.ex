@@ -1,4 +1,8 @@
 defmodule ProjectDriveWeb.Telemetry do
+  @moduledoc """
+  Telemetry configuration
+  """
+
   use Supervisor
   import Telemetry.Metrics
 

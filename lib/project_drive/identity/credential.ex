@@ -1,4 +1,6 @@
 defmodule ProjectDrive.Identity.Credential do
+  @moduledoc false
+
   use ProjectDrive.Schema
   import Ecto.Changeset
 

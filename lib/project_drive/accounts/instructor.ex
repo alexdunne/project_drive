@@ -1,4 +1,6 @@
 defmodule ProjectDrive.Accounts.Instructor do
+  @moduledoc false
+
   use ProjectDrive.Schema
   import Ecto.Changeset
 

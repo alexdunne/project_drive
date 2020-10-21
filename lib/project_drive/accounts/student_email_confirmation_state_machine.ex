@@ -8,7 +8,4 @@ defmodule ProjectDrive.Accounts.StudentEmailConfirmationStateMachine do
     transitions: %{
       "awaiting_confirmation" => "confirmed"
     }
-
-  alias ProjectDrive.Accounts
-  alias ProjectDrive.Accounts.{Student}
 end

@@ -6,8 +6,6 @@ defmodule ProjectDrive.Schedule.Email do
 
   require Logger
 
-  @sender_email Application.fetch_env!(:project_drive, :sender_email)
-
   defmodule NewLessonNotificationData do
     @moduledoc """
     Holds the required data for a new lesson notification email
@@ -90,7 +88,7 @@ defmodule ProjectDrive.Schedule.Email do
 
     new_email(
       to: data.student_email,
-      from: @sender_email,
+      from: sender_email(),
       subject: "Lesson booked confirmation",
       html_body: body,
       text_body: body
@@ -115,7 +113,7 @@ defmodule ProjectDrive.Schedule.Email do
 
     new_email(
       to: data.student_email,
-      from: @sender_email,
+      from: sender_email(),
       subject: "Lesson rescheduled",
       html_body: body,
       text_body: body
@@ -134,7 +132,7 @@ defmodule ProjectDrive.Schedule.Email do
 
     new_email(
       to: data.student_email,
-      from: @sender_email,
+      from: sender_email(),
       subject: "Lesson #{formatted_lesson_starts_at} cancelled",
       html_body: body,
       text_body: body
@@ -153,7 +151,7 @@ defmodule ProjectDrive.Schedule.Email do
 
     new_email(
       to: data.student_email,
-      from: @sender_email,
+      from: sender_email(),
       subject: "Lesson reminder",
       html_body: body,
       text_body: body
@@ -166,5 +164,9 @@ defmodule ProjectDrive.Schedule.Email do
     end)
 
     raise "The notification type is not supported"
+  end
+
+  defp sender_email() do
+    Application.fetch_env!(:project_drive, :sender_email)
   end
 end

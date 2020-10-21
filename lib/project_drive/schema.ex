@@ -1,4 +1,8 @@
 defmodule ProjectDrive.Schema do
+  @moduledoc """
+  Enforces consist rules for Ecto Schemas
+  """
+
   defmacro __using__(_) do
     quote do
       use Ecto.Schema

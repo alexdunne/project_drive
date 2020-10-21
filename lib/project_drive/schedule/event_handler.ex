@@ -1,4 +1,8 @@
 defmodule ProjectDrive.Schedule.EventHandler do
+  @moduledoc """
+  Handles schedule related events
+  """
+
   use GenServer
 
   require Logger
