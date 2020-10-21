@@ -24,6 +24,7 @@ defmodule ProjectDrive.Schedule.Event do
     |> set_seconds_to_zero(:starts_at)
     |> set_seconds_to_zero(:ends_at)
     |> validate_is_future_event()
+    |> validate_is_before(:starts_at, :ends_at)
     |> prepare_changes(fn changeset ->
       changeset
       |> validate_no_conflicts()
@@ -39,6 +40,19 @@ defmodule ProjectDrive.Schedule.Event do
 
       _ ->
         add_error(changeset, :starts_at, "must be in the future")
+    end
+  end
+
+  defp validate_is_before(changeset, first_date_field, second_date_field) do
+    first_date = get_field(changeset, first_date_field)
+    second_date = get_field(changeset, second_date_field)
+
+    case Timex.compare(first_date, second_date) do
+      -1 ->
+        changeset
+
+      _ ->
+        add_error(changeset, first_date_field, "must be before the end time")
     end
   end
 
