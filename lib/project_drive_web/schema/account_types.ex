@@ -3,6 +3,7 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
 
   use Absinthe.Schema.Notation
 
+  alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
 
   object :student_invite do
@@ -30,6 +31,8 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
     @desc "Invite a person to become a Student of the current Instructor"
     field :create_student_invite, :student_invite_payload do
       arg(:input, non_null(:create_student_invite_input))
+
+      middleware(EnsureAuthenticated)
 
       resolve(&Resolvers.Account.create_student_invite/3)
     end

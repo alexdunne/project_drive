@@ -3,6 +3,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
 
   use Absinthe.Schema.Notation
 
+  alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
 
   enum :event_type do
@@ -65,11 +66,15 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :create_lesson, :create_lesson_payload do
       arg(:input, non_null(:create_lesson_input))
 
+      middleware(EnsureAuthenticated)
+
       resolve(&Resolvers.Schedule.create_lesson/3)
     end
 
     field :update_lesson, :update_lesson_payload do
       arg(:input, non_null(:update_lesson_input))
+
+      middleware(EnsureAuthenticated)
 
       resolve(&Resolvers.Schedule.update_lesson/3)
     end
@@ -77,11 +82,15 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :reschedule_lesson, :reschedule_lesson_payload do
       arg(:input, non_null(:reschedule_lesson_input))
 
+      middleware(EnsureAuthenticated)
+
       resolve(&Resolvers.Schedule.reschedule_lesson/3)
     end
 
     field :delete_lesson, :delete_lesson_payload do
       arg(:input, non_null(:delete_lesson_input))
+
+      middleware(EnsureAuthenticated)
 
       resolve(&Resolvers.Schedule.delete_lesson/3)
     end

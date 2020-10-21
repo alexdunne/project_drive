@@ -28,4 +28,8 @@ defmodule ProjectDriveWeb.Schema do
     import_fields(:account_mutations)
     import_fields(:schedule_mutations)
   end
+
+  def middleware(middleware, _field, _object) do
+    middleware ++ [ProjectDriveWeb.Middleware.HandleNotAuthorizedErrors]
+  end
 end
