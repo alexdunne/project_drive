@@ -5,6 +5,15 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
 
   alias ProjectDrive.{Accounts, Schedule}
 
+  def get_event(%{id: id}, _, %{context: %{user: user}}) do
+    instructor = Accounts.get_instructor_for_user!(user.id)
+    event = Schedule.get_event(id)
+
+    Bodyguard.permit!(Schedule, :view_event, instructor, event)
+
+    {:ok, event}
+  end
+
   def create_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     student = Accounts.get_student(input.student_id)

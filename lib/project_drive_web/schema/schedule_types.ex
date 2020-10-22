@@ -2,6 +2,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
   @moduledoc false
 
   use Absinthe.Schema.Notation
+  use Absinthe.Relay.Schema.Notation, :modern
 
   alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
@@ -34,8 +35,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :id, non_null(:id)
   end
 
-  object :event do
-    field :id, non_null(:id)
+  node object(:event) do
     field :starts_at, non_null(:datetime)
     field :ends_at, non_null(:datetime)
     field :type, non_null(:event_type)

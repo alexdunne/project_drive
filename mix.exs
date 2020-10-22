@@ -60,7 +60,8 @@ defmodule ProjectDrive.MixProject do
       {:ecto_enum, "~> 1.4"},
       {:credo, "~> 1.5.0-rc.2", only: [:dev, :test], runtime: false},
       {:oban, "~> 2.2"},
-      {:machinery, "~> 1.0.0"}
+      {:machinery, "~> 1.0.0"},
+      {:absinthe_relay, "~> 1.4"}
     ]
   end
 

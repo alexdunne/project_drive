@@ -7,18 +7,33 @@ defmodule ProjectDriveWeb.Schema do
   """
 
   use Absinthe.Schema
+  use Absinthe.Relay.Schema, :modern
 
-  alias ProjectDriveWeb.{Middleware, Schema}
+  alias ProjectDriveWeb.{Middleware, Resolvers, Schema}
 
   import_types(Absinthe.Type.Custom)
   import_types(Schema.AuthTypes)
   import_types(Schema.AccountTypes)
   import_types(Schema.ScheduleTypes)
 
+  node interface do
+    resolve_type(fn
+      %ProjectDrive.Schedule.Event{}, _ ->
+        :event
+
+      _, _ ->
+        nil
+    end)
+  end
+
   query do
-    field :test, :string do
-      resolve(fn _, _ ->
-        {:ok, "hi"}
+    node field do
+      resolve(fn
+        %{type: :event, id: id}, ctx ->
+          Resolvers.Schedule.get_event(%{id: id}, %{}, ctx)
+
+        _, _ ->
+          {:error, :not_found}
       end)
     end
   end

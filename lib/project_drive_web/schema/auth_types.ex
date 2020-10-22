@@ -2,6 +2,7 @@ defmodule ProjectDriveWeb.Schema.AuthTypes do
   @moduledoc false
 
   use Absinthe.Schema.Notation
+  use Absinthe.Relay.Schema.Notation, :modern
 
   alias ProjectDriveWeb.{Resolvers}
 

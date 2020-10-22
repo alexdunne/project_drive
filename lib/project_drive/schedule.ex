@@ -5,7 +5,7 @@ defmodule ProjectDrive.Schedule do
 
   import Ecto.Query, warn: false
 
-  alias ProjectDrive.{Accounts, Mailer, Repo, Schedule}
+  alias ProjectDrive.{Accounts, Mailer, Repo}
   alias ProjectDrive.Schedule.{Email, Policy}
 
   # aliased as EventBus.EventSource also has an Event module
