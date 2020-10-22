@@ -68,3 +68,9 @@ config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
 
 config :project_drive, ProjectDrive.Mailer, adapter: Bamboo.LocalAdapter
+
+config :project_drive, Oban,
+  repo: ProjectDrive.Repo,
+  plugins: [Oban.Plugins.Pruner],
+  queues: [default: 10],
+  crontab: []
