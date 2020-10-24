@@ -26,6 +26,8 @@ defmodule ProjectDrive.Accounts do
     Repo.one(from s in Student, where: s.email == ^email, where: s.instructor_id == ^instructor.id)
   end
 
+  def get_student_invite(id), do: Repo.get(StudentInvite, id)
+
   def get_student_invite_by_token(token) do
     now = Timex.now()
 

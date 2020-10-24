@@ -67,13 +67,4 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
       other -> other
     end
   end
-
-  def get_student(%Schedule.Event{student_id: student_id}, _args, %{context: %{user: user}}) do
-    instructor = Accounts.get_instructor_for_user!(user.id)
-    student = Accounts.get_student(student_id)
-
-    Bodyguard.permit!(Accounts, :view_student, instructor, student)
-
-    {:ok, student}
-  end
 end

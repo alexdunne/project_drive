@@ -7,13 +7,12 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
   alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
 
-  object :student_invite do
+  node object(:student_invite) do
     field :name, non_null(:string)
     field :email, non_null(:string)
   end
 
-  object :student do
-    field :id, non_null(:id)
+  node object(:student) do
     field :email, non_null(:string)
     field :name, non_null(:string)
   end

@@ -18,6 +18,12 @@ defmodule ProjectDriveWeb.Schema do
 
   node interface do
     resolve_type(fn
+      %ProjectDrive.Accounts.Student{}, _ ->
+        :student
+
+      %ProjectDrive.Accounts.StudentInvite{}, _ ->
+        :student_invite
+
       %ProjectDrive.Schedule.Event{}, _ ->
         :event
 
@@ -29,6 +35,12 @@ defmodule ProjectDriveWeb.Schema do
   query do
     node field do
       resolve(fn
+        %{type: :student, id: id}, ctx ->
+          Resolvers.Account.get_student(%{id: id}, %{}, ctx)
+
+        %{type: :student_invite, id: id}, ctx ->
+          Resolvers.Account.get_student_invite(%{id: id}, %{}, ctx)
+
         %{type: :event, id: id}, ctx ->
           Resolvers.Schedule.get_event(%{id: id}, %{}, ctx)
 

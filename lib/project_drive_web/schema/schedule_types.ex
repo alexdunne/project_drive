@@ -18,7 +18,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :notes, :string
 
     field :student, non_null(:student) do
-      resolve(&Resolvers.Schedule.get_student/3)
+      resolve(&Resolvers.Account.get_student/3)
     end
   end
 
