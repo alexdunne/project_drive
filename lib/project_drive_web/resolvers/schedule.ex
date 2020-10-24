@@ -14,6 +14,12 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     {:ok, event}
   end
 
+  def list_events(_, pagination_args, %{context: %{user: user}}) do
+    instructor = Accounts.get_instructor_for_user!(user.id)
+
+    Schedule.list_events_query(instructor, pagination: pagination_args)
+  end
+
   def create_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     student = Accounts.get_student(input.student_id)

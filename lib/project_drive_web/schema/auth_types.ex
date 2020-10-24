@@ -24,12 +24,12 @@ defmodule ProjectDriveWeb.Schema.AuthTypes do
   end
 
   object :auth_payload do
-    field :token, :string
+    field :token, non_null(:string)
     field :user, :user
   end
 
   object :user do
-    field :id, :id
+    field :id, non_null(:id)
   end
 
   object :auth_mutations do

@@ -36,6 +36,8 @@ defmodule ProjectDriveWeb.Schema do
           {:error, :not_found}
       end)
     end
+
+    import_fields(:schedule_queries)
   end
 
   mutation do

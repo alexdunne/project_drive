@@ -5,21 +5,35 @@ defmodule ProjectDrive.Schedule do
 
   import Ecto.Query, warn: false
 
-  alias ProjectDrive.{Accounts, Mailer, Repo}
+  alias ProjectDrive.{Accounts, Mailer, Schedule, Repo}
   alias ProjectDrive.Schedule.{Email, Policy}
-
-  # aliased as EventBus.EventSource also has an Event module
-  alias ProjectDrive.Schedule.Event, as: ScheduleEvent
 
   use EventBus.EventSource
 
   defdelegate authorize(action, user, params), to: Policy
 
-  def get_event(id), do: Repo.get(ScheduleEvent, id)
+  def get_event(id), do: Repo.get(Schedule.Event, id)
+
+  def list_events_query(%Accounts.Instructor{} = instructor, opts \\ []) do
+    defaults = [pagination: %{first: 10}]
+
+    opts = Keyword.merge(defaults, opts)
+
+    query =
+      from ev in Schedule.Event,
+        where: ev.instructor_id == ^instructor.id,
+        order_by: ev.starts_at
+
+    # Not sure returning something Absinthe specifc from Context is the best approach
+    # We could return the query but that doesn't sound like a great idea either
+    # We could do the offset & limit ourselves and return info like if there are more
+    # but at that point we're essentially returning the connection
+    Absinthe.Relay.Connection.from_query(query, &Repo.all/1, opts[:pagination])
+  end
 
   def get_lessons_which_start_at(starts_at) do
     query =
-      from ev in ScheduleEvent,
+      from ev in Schedule.Event,
         where: ev.starts_at == ^starts_at,
         where: ev.type == ^:lesson
 
@@ -32,8 +46,8 @@ defmodule ProjectDrive.Schedule do
       |> Map.put(:instructor_id, instructor.id)
       |> Map.put(:type, :lesson)
 
-    %ScheduleEvent{}
-    |> ScheduleEvent.changeset(attrs)
+    %Schedule.Event{}
+    |> Schedule.Event.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, lesson} ->
@@ -45,9 +59,9 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def update_lesson(%ScheduleEvent{} = lesson, lesson_attrs) do
+  def update_lesson(%Schedule.Event{} = lesson, lesson_attrs) do
     lesson
-    |> ScheduleEvent.changeset(lesson_attrs)
+    |> Schedule.Event.changeset(lesson_attrs)
     |> Repo.update()
     |> case do
       {:ok, updated_lesson} ->
@@ -59,7 +73,7 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def delete_lesson(%ScheduleEvent{} = lesson) do
+  def delete_lesson(%Schedule.Event{} = lesson) do
     Repo.delete(lesson)
     |> case do
       {:ok, lesson} ->
@@ -71,7 +85,7 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def send_new_lesson_notification(%ScheduleEvent{} = lesson) do
+  def send_new_lesson_notification(%Schedule.Event{} = lesson) do
     student = Accounts.get_student(lesson.student_id)
 
     if student.email_confirmation_state == "confirmed" do
@@ -85,7 +99,7 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def send_lesson_rescheduled_notification(%ScheduleEvent{} = updated_lesson, %ScheduleEvent{} = original_lesson) do
+  def send_lesson_rescheduled_notification(%Schedule.Event{} = updated_lesson, %Schedule.Event{} = original_lesson) do
     student = Accounts.get_student(updated_lesson.student_id)
 
     if student.email_confirmation_state == "confirmed" do
@@ -100,7 +114,7 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def send_lesson_cancelled_notification(%ScheduleEvent{} = lesson) do
+  def send_lesson_cancelled_notification(%Schedule.Event{} = lesson) do
     student = Accounts.get_student(lesson.student_id)
 
     if student.email_confirmation_state == "confirmed" do
@@ -113,7 +127,7 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  def send_lesson_reminder_notification(%ScheduleEvent{} = lesson) do
+  def send_lesson_reminder_notification(%Schedule.Event{} = lesson) do
     student = Accounts.get_student(lesson.student_id)
 
     if student.email_confirmation_state == "confirmed" do
@@ -126,15 +140,15 @@ defmodule ProjectDrive.Schedule do
     end
   end
 
-  defp publish_event(%ScheduleEvent{type: :lesson} = lesson, event_name) do
+  defp publish_event(%Schedule.Event{type: :lesson} = lesson, event_name) do
     EventSource.notify %{id: UUID.uuid4(), topic: event_name} do
       %{lesson: lesson}
     end
   end
 
   defp publish_event(
-         %ScheduleEvent{type: :lesson} = updated_lesson,
-         %ScheduleEvent{type: :lesson} = original_lesson,
+         %Schedule.Event{type: :lesson} = updated_lesson,
+         %Schedule.Event{type: :lesson} = original_lesson,
          event_name
        ) do
     EventSource.notify %{id: UUID.uuid4(), topic: event_name} do

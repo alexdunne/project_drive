@@ -11,6 +11,19 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     value(:lesson, description: "Lesson event type")
   end
 
+  node object(:event) do
+    field :starts_at, non_null(:datetime)
+    field :ends_at, non_null(:datetime)
+    field :type, non_null(:event_type)
+    field :notes, :string
+
+    field :student, non_null(:student) do
+      resolve(&Resolvers.Schedule.get_student/3)
+    end
+  end
+
+  connection(node_type: :event)
+
   input_object :create_lesson_input do
     field :starts_at, non_null(:datetime)
     field :ends_at, non_null(:datetime)
@@ -35,17 +48,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :id, non_null(:id)
   end
 
-  node object(:event) do
-    field :starts_at, non_null(:datetime)
-    field :ends_at, non_null(:datetime)
-    field :type, non_null(:event_type)
-    field :notes, :string
-
-    field :student, non_null(:student) do
-      resolve(&Resolvers.Schedule.get_student/3)
-    end
-  end
-
   object :create_lesson_payload do
     field :lesson, :event
   end
@@ -60,6 +62,14 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
 
   object :delete_lesson_payload do
     field :id, non_null(:id)
+  end
+
+  object :schedule_queries do
+    connection field :events, node_type: :event do
+      middleware(EnsureAuthenticated)
+
+      resolve(&Resolvers.Schedule.list_events/3)
+    end
   end
 
   object :schedule_mutations do
