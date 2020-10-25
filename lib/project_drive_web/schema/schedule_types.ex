@@ -66,6 +66,8 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
 
   object :schedule_queries do
     connection field :events, node_type: :event do
+      arg(:search_term, :string)
+
       middleware(EnsureAuthenticated)
 
       resolve(&Resolvers.Schedule.list_events/3)

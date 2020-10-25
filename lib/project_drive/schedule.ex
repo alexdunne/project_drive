@@ -15,20 +15,16 @@ defmodule ProjectDrive.Schedule do
   def get_event(id), do: Repo.get(Schedule.Event, id)
 
   def list_events_query(%Accounts.Instructor{} = instructor, opts \\ []) do
-    defaults = [pagination: %{first: 10}]
-
-    opts = Keyword.merge(defaults, opts)
-
-    query =
-      from ev in Schedule.Event,
-        where: ev.instructor_id == ^instructor.id,
-        order_by: ev.starts_at
-
     # Not sure returning something Absinthe specifc from Context is the best approach
     # We could return the query but that doesn't sound like a great idea either
     # We could do the offset & limit ourselves and return info like if there are more
     # but at that point we're essentially returning the connection
-    Absinthe.Relay.Connection.from_query(query, &Repo.all/1, opts[:pagination])
+
+    Schedule.Event
+    |> Schedule.Event.filter_by_instructor(instructor)
+    |> Schedule.Event.filter(opts[:filters])
+    |> Schedule.Event.order_events_asc()
+    |> Absinthe.Relay.Connection.from_query(&Repo.all/1, opts[:filters])
   end
 
   def get_lessons_which_start_at(starts_at) do

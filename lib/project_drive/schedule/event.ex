@@ -4,6 +4,7 @@ defmodule ProjectDrive.Schedule.Event do
   use ProjectDrive.Schema
   import Ecto.{Changeset, Query}
 
+  alias ProjectDrive.Accounts
   alias ProjectDrive.Schedule.Event
 
   schema "events" do
@@ -90,5 +91,72 @@ defmodule ProjectDrive.Schedule.Event do
     field_value = get_field(changeset, field)
 
     put_change(changeset, field, Timex.set(field_value, second: 0))
+  end
+
+  def filter_by_instructor(query \\ __MODULE__, %Accounts.Instructor{} = instructor) do
+    from ev in query, where: ev.instructor_id == ^instructor.id
+  end
+
+  def order_events_asc(query) do
+    from ev in query, order_by: [asc: :starts_at]
+  end
+
+  def filter(query, filters) do
+    defaults = %{search_term: ""}
+    filters = Map.merge(defaults, filters)
+
+    search_term = String.downcase(filters[:search_term])
+
+    query
+    |> join(:inner, [ev], s in Accounts.Student, on: ev.student_id == s.id, as: :student)
+    |> where(^filter_by_search_term(search_term))
+  end
+
+  defp filter_by_search_term("today") do
+    today = Timex.now()
+
+    filter_between_dates(today)
+  end
+
+  defp filter_by_search_term("tomorrow") do
+    tomorrow = Timex.now() |> Timex.shift(days: 1)
+
+    filter_between_dates(tomorrow)
+  end
+
+  defp filter_by_search_term("this week") do
+    today = Timex.now()
+
+    start_date = Timex.beginning_of_week(today)
+    end_date = Timex.end_of_week(today)
+
+    filter_between_dates(start_date, end_date)
+  end
+
+  defp filter_by_search_term("next week") do
+    today = Timex.now() |> Timex.shift(weeks: 1)
+
+    start_date = Timex.beginning_of_week(today)
+    end_date = Timex.end_of_week(today)
+
+    filter_between_dates(start_date, end_date)
+  end
+
+  defp filter_by_search_term(student_name) do
+    value = String.trim(student_name)
+
+    if String.length(value) > 0 do
+      dynamic([student: s], ilike(s.name, ^"#{value}%"))
+    else
+      true
+    end
+  end
+
+  defp filter_between_dates(date) do
+    filter_between_dates(Timex.beginning_of_day(date), Timex.end_of_day(date))
+  end
+
+  defp filter_between_dates(start_date, end_date) do
+    dynamic([ev], ev.starts_at >= ^start_date and ev.starts_at <= ^end_date)
   end
 end
