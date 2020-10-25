@@ -76,6 +76,6 @@ config :project_drive, Oban,
   crontab: []
 
 config :cors_plug,
-  origin: ["http://localhost:3000"],
+  origin: ["*"],
   max_age: 86_400,
   methods: ["GET", "POST"]
