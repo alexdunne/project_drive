@@ -25,6 +25,12 @@ defmodule ProjectDriveWeb.Resolvers.Account do
     {:ok, student}
   end
 
+  def list_students(_, args, %{context: %{user: user}}) do
+    instructor = Accounts.get_instructor_for_user!(user.id)
+
+    Accounts.list_students_query(instructor, filters: args)
+  end
+
   def get_student_invite(%{id: id}, _, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     student_invite = Accounts.get_student_invite(id)

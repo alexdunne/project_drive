@@ -26,6 +26,14 @@ defmodule ProjectDrive.Accounts do
     Repo.one(from s in Student, where: s.email == ^email, where: s.instructor_id == ^instructor.id)
   end
 
+  def list_students_query(%Instructor{} = instructor, opts \\ []) do
+    Student
+    |> Student.filter_by_instructor(instructor)
+    |> Student.filter(opts[:filters])
+    |> Student.order_students_asc()
+    |> Absinthe.Relay.Connection.from_query(&Repo.all/1, opts[:filters])
+  end
+
   def get_student_invite(id), do: Repo.get(StudentInvite, id)
 
   def get_student_invite_by_token(token) do

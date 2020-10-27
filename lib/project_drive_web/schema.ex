@@ -49,6 +49,7 @@ defmodule ProjectDriveWeb.Schema do
       end)
     end
 
+    import_fields(:account_queries)
     import_fields(:schedule_queries)
   end
 

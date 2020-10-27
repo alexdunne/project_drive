@@ -17,6 +17,8 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
     field :name, non_null(:string)
   end
 
+  connection(node_type: :student)
+
   input_object :create_student_invite_input do
     field :email, non_null(:string)
     field :name, non_null(:string)
@@ -25,6 +27,16 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
   object :student_invite_payload do
     field :student, :student
     field :student_invite, :student_invite
+  end
+
+  object :account_queries do
+    connection field :students, node_type: :student do
+      arg(:search_term, :string)
+
+      middleware(EnsureAuthenticated)
+
+      resolve(&Resolvers.Account.list_students/3)
+    end
   end
 
   object :account_mutations do
