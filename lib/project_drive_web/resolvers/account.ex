@@ -40,7 +40,7 @@ defmodule ProjectDriveWeb.Resolvers.Account do
     {:ok, student_invite}
   end
 
-  def create_student_invite(_parent, %{input: attrs}, %{context: %{user: user}}) do
+  def create_student_invite(_parent, attrs, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
 
     Bodyguard.permit!(Accounts, :create_student_invite, instructor, attrs)

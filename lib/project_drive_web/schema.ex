@@ -59,8 +59,15 @@ defmodule ProjectDriveWeb.Schema do
     import_fields(:schedule_mutations)
   end
 
+  # Which globally unique ids do we need to convert to DB ids
+  @node_id_rules [
+    input: [student_id: :student]
+  ]
+
   def middleware(middleware, _field, %{identifier: type}) when type in [:query, :subscription, :mutation] do
-    Middleware.SafeResolution.apply(middleware) ++ [Middleware.ErrorHandler]
+    middleware = Middleware.SafeResolution.apply(middleware) ++ [Middleware.ErrorHandler]
+
+    [{Absinthe.Relay.Node.ParseIDs, @node_id_rules} | middleware]
   end
 
   def middleware(middleware, _field, _object) do

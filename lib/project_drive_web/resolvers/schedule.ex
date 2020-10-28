@@ -17,10 +17,12 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
   def list_events(_, args, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
 
+    IO.inspect(args)
+
     Schedule.list_events_query(instructor, filters: args)
   end
 
-  def create_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
+  def create_lesson(_parent, input, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     student = Accounts.get_student(input.student_id)
 
@@ -32,7 +34,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     end
   end
 
-  def update_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
+  def update_lesson(_parent, input, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     lesson = Schedule.get_event(input.id)
 
@@ -44,7 +46,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     end
   end
 
-  def reschedule_lesson(_parent, %{input: input}, %{context: %{user: user}}) do
+  def reschedule_lesson(_parent, input, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     lesson = Schedule.get_event(input.id)
 
@@ -56,7 +58,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     end
   end
 
-  def delete_lesson(_parent, %{input: %{id: id}}, %{context: %{user: user}}) do
+  def delete_lesson(_parent, %{id: id}, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     lesson = Schedule.get_event(id)
 
