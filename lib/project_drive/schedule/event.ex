@@ -61,20 +61,13 @@ defmodule ProjectDrive.Schedule.Event do
 
   defp validate_no_conflicts(changeset) do
     id = get_field(changeset, :id)
+    instructor_id = get_field(changeset, :instructor_id)
     starts_at = get_field(changeset, :starts_at)
     ends_at = get_field(changeset, :ends_at)
 
     query =
-      from ev in Event,
-        where: ^starts_at < ev.ends_at and ^ends_at > ev.starts_at,
-        select: count(ev.id)
-
-    query =
-      if is_nil(id) do
-        query
-      else
-        from ev in query, where: ev.id != ^id
-      end
+      filter_by_instructor(instructor_id)
+      |> select_conflicts_count(%{id: id, starts_at: starts_at, ends_at: ends_at})
 
     conflicts = changeset.repo.one(query)
 
@@ -93,8 +86,36 @@ defmodule ProjectDrive.Schedule.Event do
     put_change(changeset, field, Timex.set(field_value, second: 0))
   end
 
-  def filter_by_instructor(query \\ __MODULE__, %Accounts.Instructor{} = instructor) do
+  def select_conflicts_count(query \\ __MODULE__, args)
+
+  def select_conflicts_count(query, %{id: id, starts_at: starts_at, ends_at: ends_at}) do
+    filter_by_id =
+      if is_nil(id) do
+        true
+      else
+        dynamic([ev], ev.id != ^id)
+      end
+
+    query
+    |> where(^filter_by_id)
+    |> where([ev], ^starts_at < ev.ends_at and ^ends_at > ev.starts_at)
+    |> select([ev], count(ev.id))
+  end
+
+  def select_conflicts_count(query, %{starts_at: _starts_at, ends_at: _ends_at} = args) do
+    args = Map.put(args, :id, nil)
+
+    select_conflicts_count(query, args)
+  end
+
+  def filter_by_instructor(query \\ __MODULE__, instructor)
+
+  def filter_by_instructor(query, %Accounts.Instructor{} = instructor) do
     from ev in query, where: ev.instructor_id == ^instructor.id
+  end
+
+  def filter_by_instructor(query, instructor_id) when is_binary(instructor_id) do
+    from ev in query, where: ev.instructor_id == ^instructor_id
   end
 
   def order_events_asc(query) do

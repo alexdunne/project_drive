@@ -32,6 +32,22 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
 
       resolve(&Resolvers.Schedule.list_events/3)
     end
+
+    payload field :event_conflicts_check do
+      middleware(EnsureAuthenticated)
+
+      input do
+        field :type, non_null(:event_type)
+        field :starts_at, non_null(:datetime)
+        field :ends_at, non_null(:datetime)
+      end
+
+      output do
+        field :has_conflicts, :boolean
+      end
+
+      resolve(&Resolvers.Schedule.has_conflicts/3)
+    end
   end
 
   object :schedule_mutations do

@@ -36,6 +36,16 @@ defmodule ProjectDrive.Schedule do
     Repo.all(query)
   end
 
+  def has_conflicts(%Accounts.Instructor{} = instructor, %{starts_at: starts_at, ends_at: ends_at}) do
+    conflicts =
+      Schedule.Event
+      |> Schedule.Event.filter_by_instructor(instructor)
+      |> Schedule.Event.select_conflicts_count(%{starts_at: starts_at, ends_at: ends_at})
+      |> Repo.one()
+
+    {:ok, %{has_conflicts: conflicts > 0}}
+  end
+
   def create_lesson(%Accounts.Instructor{} = instructor, lesson_attrs) do
     attrs =
       lesson_attrs

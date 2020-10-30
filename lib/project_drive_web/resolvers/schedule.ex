@@ -17,9 +17,13 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
   def list_events(_, args, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
 
-    IO.inspect(args)
-
     Schedule.list_events_query(instructor, filters: args)
+  end
+
+  def has_conflicts(_, args, %{context: %{user: user}}) do
+    instructor = Accounts.get_instructor_for_user!(user.id)
+
+    Schedule.has_conflicts(instructor, args)
   end
 
   def create_lesson(_parent, input, %{context: %{user: user}}) do
