@@ -40,7 +40,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
 
   def update_lesson(_parent, input, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
-    lesson = Schedule.get_event(input.id)
+    lesson = Schedule.get_event(input.lesson_id)
 
     Bodyguard.permit!(Schedule, :update_lesson, instructor, lesson)
 
@@ -52,7 +52,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
 
   def reschedule_lesson(_parent, input, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
-    lesson = Schedule.get_event(input.id)
+    lesson = Schedule.get_event(input.lesson_id)
 
     Bodyguard.permit!(Schedule, :update_lesson, instructor, lesson)
 
@@ -62,7 +62,7 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     end
   end
 
-  def delete_lesson(_parent, %{id: id}, %{context: %{user: user}}) do
+  def delete_lesson(_parent, %{lesson_id: id}, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
     lesson = Schedule.get_event(id)
 

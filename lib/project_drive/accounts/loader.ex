@@ -1,4 +1,10 @@
 defmodule ProjectDrive.Accounts.Loader do
+  @moduledoc """
+  Loader for the Accounts context.
+
+  Use the loaders to enable batching when fetching the same data multiple times
+  """
+
   alias ProjectDrive.Accounts
 
   def data() do

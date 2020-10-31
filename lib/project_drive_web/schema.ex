@@ -17,19 +17,6 @@ defmodule ProjectDriveWeb.Schema do
   import_types(Schema.AccountTypes)
   import_types(Schema.ScheduleTypes)
 
-  def context(ctx) do
-    loader =
-      Dataloader.new()
-      # |> Dataloader.add_source(:student, Dataloader.KV.new(&Accounts.Loader.fetch_students/2))
-      |> Dataloader.add_source(:student, Accounts.Loader.data())
-
-    Map.put(ctx, :loader, loader)
-  end
-
-  def plugins() do
-    [Absinthe.Middleware.Dataloader | Absinthe.Plugin.defaults()]
-  end
-
   node interface do
     resolve_type(fn
       %ProjectDrive.Accounts.Student{}, _ ->
@@ -75,7 +62,8 @@ defmodule ProjectDriveWeb.Schema do
 
   # Which globally unique ids do we need to convert to DB ids
   @node_id_rules [
-    input: [student_id: :student]
+    input: [student_id: :student],
+    input: [lesson_id: :event]
   ]
 
   def middleware(middleware, _field, %{identifier: type}) when type in [:query, :subscription, :mutation] do
@@ -86,5 +74,18 @@ defmodule ProjectDriveWeb.Schema do
 
   def middleware(middleware, _field, _object) do
     middleware
+  end
+
+  def context(ctx) do
+    loader =
+      Dataloader.new()
+      # |> Dataloader.add_source(:student, Dataloader.KV.new(&Accounts.Loader.fetch_students/2))
+      |> Dataloader.add_source(:student, Accounts.Loader.data())
+
+    Map.put(ctx, :loader, loader)
+  end
+
+  def plugins() do
+    [Absinthe.Middleware.Dataloader | Absinthe.Plugin.defaults()]
   end
 end

@@ -25,9 +25,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
           {:student, %{user: user}}
         end)
       )
-
-      # resolve(dataloader(:student))
-      # resolve(&Resolvers.Account.get_student/3)
     end
   end
 
@@ -81,7 +78,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
       middleware(EnsureAuthenticated)
 
       input do
-        field :id, non_null(:id)
+        field :lesson_id, non_null(:id)
         field :starts_at, :datetime
         field :ends_at, :datetime
         field :notes, :string
@@ -98,7 +95,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
       middleware(EnsureAuthenticated)
 
       input do
-        field :id, non_null(:id)
+        field :lesson_id, non_null(:id)
         field :starts_at, non_null(:datetime)
         field :ends_at, non_null(:datetime)
       end
@@ -114,7 +111,7 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
       middleware(EnsureAuthenticated)
 
       input do
-        field :id, non_null(:id)
+        field :lesson_id, non_null(:id)
       end
 
       output do
