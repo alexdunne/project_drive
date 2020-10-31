@@ -24,6 +24,7 @@ defmodule ProjectDriveWeb.Router do
     scope "/auth" do
       post "/register", ProjectDriveWeb.AuthController, :register
       post "/login", ProjectDriveWeb.AuthController, :login
+      post "/refresh", ProjectDriveWeb.AuthController, :refresh
     end
 
     forward "/graphiql", Absinthe.Plug.GraphiQL,

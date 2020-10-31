@@ -33,7 +33,8 @@ config :phoenix, :json_library, Jason
 # Configure Guardian
 config :project_drive, ProjectDrive.Guardian,
   issuer: "ProjectDrive",
-  secret_key: "fbbk2PhNH+wy+vI4INc0I/1iI49X7PSz+TuRfEEFXca762w/w9mY9PMR4Ad8QJqE"
+  secret_key: "fbbk2PhNH+wy+vI4INc0I/1iI49X7PSz+TuRfEEFXca762w/w9mY9PMR4Ad8QJqE",
+  ttl: {60, :minutes}
 
 # Configure EventBus
 config :event_bus,

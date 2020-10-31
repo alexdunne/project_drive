@@ -5,7 +5,6 @@ defmodule ProjectDrive.Schedule.Event do
   import Ecto.{Changeset, Query}
 
   alias ProjectDrive.Accounts
-  alias ProjectDrive.Schedule.Event
 
   schema "events" do
     field :ends_at, :utc_datetime
