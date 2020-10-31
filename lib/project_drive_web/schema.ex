@@ -9,12 +9,26 @@ defmodule ProjectDriveWeb.Schema do
   use Absinthe.Schema
   use Absinthe.Relay.Schema, :modern
 
+  alias ProjectDrive.{Accounts}
   alias ProjectDriveWeb.{Middleware, Resolvers, Schema}
 
   import_types(Absinthe.Type.Custom)
   import_types(Schema.AuthTypes)
   import_types(Schema.AccountTypes)
   import_types(Schema.ScheduleTypes)
+
+  def context(ctx) do
+    loader =
+      Dataloader.new()
+      # |> Dataloader.add_source(:student, Dataloader.KV.new(&Accounts.Loader.fetch_students/2))
+      |> Dataloader.add_source(:student, Accounts.Loader.data())
+
+    Map.put(ctx, :loader, loader)
+  end
+
+  def plugins() do
+    [Absinthe.Middleware.Dataloader | Absinthe.Plugin.defaults()]
+  end
 
   node interface do
     resolve_type(fn

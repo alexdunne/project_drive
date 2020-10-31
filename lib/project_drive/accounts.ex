@@ -22,6 +22,13 @@ defmodule ProjectDrive.Accounts do
 
   def get_student(id), do: Repo.get(Student, id)
 
+  def get_students(%Instructor{} = instructor, ids) do
+    Student
+    |> Student.filter_by_instructor(instructor)
+    |> where([s], s.id in ^ids)
+    |> Repo.all()
+  end
+
   def get_student_by_email(%Instructor{} = instructor, email) do
     Repo.one(from s in Student, where: s.email == ^email, where: s.instructor_id == ^instructor.id)
   end

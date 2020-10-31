@@ -4,6 +4,8 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
   use Absinthe.Schema.Notation
   use Absinthe.Relay.Schema.Notation, :modern
 
+  import Absinthe.Resolution.Helpers, only: [dataloader: 2]
+
   alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
 
@@ -18,7 +20,14 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     field :notes, :string
 
     field :student, non_null(:student) do
-      resolve(&Resolvers.Account.get_student/3)
+      resolve(
+        dataloader(:student, fn _event, _args, %{context: %{user: user}} ->
+          {:student, %{user: user}}
+        end)
+      )
+
+      # resolve(dataloader(:student))
+      # resolve(&Resolvers.Account.get_student/3)
     end
   end
 
