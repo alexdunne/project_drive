@@ -14,11 +14,17 @@ defmodule ProjectDriveWeb.Router do
   end
 
   pipeline :api do
+    plug :accepts, ["json"]
     plug ProjectDriveWeb.Plugs.Context
   end
 
   scope "/api" do
     pipe_through(:api)
+
+    scope "/auth" do
+      post "/register", ProjectDriveWeb.AuthController, :register
+      post "/login", ProjectDriveWeb.AuthController, :login
+    end
 
     forward "/graphiql", Absinthe.Plug.GraphiQL,
       schema: ProjectDriveWeb.Schema,

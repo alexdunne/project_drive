@@ -52,7 +52,7 @@ defmodule ProjectDrive.Utils.Error do
     |> Enum.map(fn {k, v} ->
       %Error{
         code: :validation,
-        message: "Invalid field",
+        message: v,
         status_code: 422,
         extra: %{validation: %{field: k, error: v}}
       }

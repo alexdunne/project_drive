@@ -6,7 +6,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
 
   import Absinthe.Resolution.Helpers, only: [dataloader: 2]
 
-  alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
 
   enum :event_type do
@@ -34,14 +33,10 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     connection field :events, node_type: :event do
       arg(:search_term, :string)
 
-      middleware(EnsureAuthenticated)
-
       resolve(&Resolvers.Schedule.list_events/3)
     end
 
     payload field :event_conflicts_check do
-      middleware(EnsureAuthenticated)
-
       input do
         field :type, non_null(:event_type)
         field :starts_at, non_null(:datetime)
@@ -58,8 +53,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
 
   object :schedule_mutations do
     payload field :create_lesson do
-      middleware(EnsureAuthenticated)
-
       input do
         field :starts_at, non_null(:datetime)
         field :ends_at, non_null(:datetime)
@@ -75,8 +68,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     end
 
     payload field :update_lesson do
-      middleware(EnsureAuthenticated)
-
       input do
         field :lesson_id, non_null(:id)
         field :starts_at, :datetime
@@ -92,8 +83,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     end
 
     payload field :reschedule_lesson do
-      middleware(EnsureAuthenticated)
-
       input do
         field :lesson_id, non_null(:id)
         field :starts_at, non_null(:datetime)
@@ -108,8 +97,6 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     end
 
     payload field :delete_lesson do
-      middleware(EnsureAuthenticated)
-
       input do
         field :lesson_id, non_null(:id)
       end

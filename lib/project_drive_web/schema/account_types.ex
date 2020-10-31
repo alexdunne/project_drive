@@ -4,7 +4,6 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
   use Absinthe.Schema.Notation
   use Absinthe.Relay.Schema.Notation, :modern
 
-  alias ProjectDriveWeb.Middleware.{EnsureAuthenticated}
   alias ProjectDriveWeb.{Resolvers}
 
   node object(:student_invite) do
@@ -23,8 +22,6 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
     connection field :students, node_type: :student do
       arg(:search_term, :string)
 
-      middleware(EnsureAuthenticated)
-
       resolve(&Resolvers.Account.list_students/3)
     end
   end
@@ -32,8 +29,6 @@ defmodule ProjectDriveWeb.Schema.AccountTypes do
   object :account_mutations do
     @desc "Invite a person to become a Student of the current Instructor"
     payload field :create_student_invite do
-      middleware(EnsureAuthenticated)
-
       input do
         field :email, non_null(:string)
         field :name, non_null(:string)

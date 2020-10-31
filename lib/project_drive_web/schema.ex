@@ -13,7 +13,6 @@ defmodule ProjectDriveWeb.Schema do
   alias ProjectDriveWeb.{Middleware, Resolvers, Schema}
 
   import_types(Absinthe.Type.Custom)
-  import_types(Schema.AuthTypes)
   import_types(Schema.AccountTypes)
   import_types(Schema.ScheduleTypes)
 
@@ -55,7 +54,6 @@ defmodule ProjectDriveWeb.Schema do
   end
 
   mutation do
-    import_fields(:auth_mutations)
     import_fields(:account_mutations)
     import_fields(:schedule_mutations)
   end
@@ -69,7 +67,7 @@ defmodule ProjectDriveWeb.Schema do
   def middleware(middleware, _field, %{identifier: type}) when type in [:query, :subscription, :mutation] do
     middleware = Middleware.SafeResolution.apply(middleware) ++ [Middleware.ErrorHandler]
 
-    [{Absinthe.Relay.Node.ParseIDs, @node_id_rules} | middleware]
+    [Middleware.EnsureAuthenticated, {Absinthe.Relay.Node.ParseIDs, @node_id_rules} | middleware]
   end
 
   def middleware(middleware, _field, _object) do
