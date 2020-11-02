@@ -2,7 +2,7 @@ defmodule ProjectDriveWeb.AuthController do
   use ProjectDriveWeb, :controller
   use Params
 
-  alias ProjectDrive.{Accounts, Guardian, Identity}
+  alias ProjectDrive.{Guardian, Identity, UserRegistration}
 
   action_fallback ProjectDriveWeb.FallbackController
 
@@ -18,9 +18,9 @@ defmodule ProjectDriveWeb.AuthController do
     changeset = register_params(params)
 
     if changeset.valid? do
-      user_details = Params.to_map(changeset)
+      params = Params.to_map(changeset)
 
-      with {:ok, user} <- Accounts.create_instructor(user_details),
+      with {:ok, user} <- UserRegistration.register_instructor(params),
            {:ok, refresh_token, _} <- generate_refresh_token(user),
            {:ok, _, {jwt, _}} <- Guardian.refresh(refresh_token) do
         json(conn, %{token: jwt, refresh_token: refresh_token, user: %{id: user.id}})
@@ -69,7 +69,7 @@ defmodule ProjectDriveWeb.AuthController do
     if changeset.valid? do
       invite_details = Params.to_map(changeset)
 
-      with {:ok, user} <- Accounts.create_student(invite_details),
+      with {:ok, user} <- UserRegistration.register_student_from_invite(invite_details),
            {:ok, refresh_token, _} <- generate_refresh_token(user),
            {:ok, _, {jwt, _}} <- Guardian.refresh(refresh_token) do
         json(conn, %{token: jwt, refresh_token: refresh_token, user: %{id: user.id}})

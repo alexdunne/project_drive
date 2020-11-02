@@ -36,11 +36,12 @@ defmodule ProjectDrive.Identity do
     end
   end
 
-  def create_new_user_changeset(%{email: email, password: password}) do
+  def create_new_user(%{email: email, password: password}) do
     user_attrs = %{credential: %{email: email, plain_password: password}}
 
     %User{}
     |> User.changeset(user_attrs)
     |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
+    |> Repo.insert()
   end
 end

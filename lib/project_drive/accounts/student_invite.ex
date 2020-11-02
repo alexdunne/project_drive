@@ -39,8 +39,4 @@ defmodule ProjectDrive.Accounts.StudentInvite do
         add_error(changeset, field, "must be in the future")
     end
   end
-
-  def expire_invite_changeset(%StudentInvite{} = student_invite) do
-    StudentInvite.changeset(student_invite, %{expires_at: Timex.shift(Timex.now(), seconds: 1)})
-  end
 end

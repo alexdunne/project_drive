@@ -33,14 +33,6 @@ defmodule ProjectDrive.Accounts do
     Repo.one(from s in Student, where: s.email == ^email, where: s.instructor_id == ^instructor.id)
   end
 
-  def list_students_query(%Instructor{} = instructor, opts \\ []) do
-    Student
-    |> Student.filter_by_instructor(instructor)
-    |> Student.filter(opts[:filters])
-    |> Student.order_students_asc()
-    |> Absinthe.Relay.Connection.from_query(&Repo.all/1, opts[:filters])
-  end
-
   def get_student_invite(id), do: Repo.get(StudentInvite, id)
 
   def get_student_invite_by_token(token) do
@@ -50,63 +42,45 @@ defmodule ProjectDrive.Accounts do
       from si in StudentInvite,
         where: si.token == ^token and si.expires_at > ^now
 
-    Repo.one(query)
+    invite = Repo.one(query)
+
+    {:ok, invite}
   end
 
-  def create_instructor(attrs) do
-    Multi.new()
-    |> Multi.insert(:user, Identity.create_new_user_changeset(attrs))
-    |> Multi.run(:instructor, fn repo, %{user: user} ->
-      build_new_instructor_changeset(user, attrs)
-      |> repo.insert()
-    end)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{user: user}} -> {:ok, user}
-      {:error, _operation, changeset, _changes} -> {:error, changeset}
-      other -> other
-    end
+  def list_students_query(%Instructor{} = instructor, opts \\ []) do
+    Student
+    |> Student.filter_by_instructor(instructor)
+    |> Student.filter(opts[:filters])
+    |> Student.order_students_asc()
+    |> Absinthe.Relay.Connection.from_query(&Repo.all/1, opts[:filters])
   end
 
-  def create_student(attrs) do
-    case get_student_invite_by_token(attrs.token) do
-      nil ->
-        {:error, :not_found}
+  def ensure_instructor_exists(%Identity.User{} = user) do
+    %Instructor{user_id: user.id}
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.unique_constraint(:user_id)
+    |> Repo.insert()
+    |> handle_existing_instructor()
+  end
 
-      student_invite ->
-        instructor = get_instructor(student_invite.instructor_id)
-        student = get_student_by_email(instructor, student_invite.email)
+  defp handle_existing_instructor({:ok, instructor}), do: instructor
 
-        Multi.new()
-        |> Multi.insert(
-          :user,
-          Identity.create_new_user_changeset(%{
-            email: student_invite.email,
-            password: attrs.password
-          })
-        )
-        |> Multi.run(:student, fn repo, %{user: user} ->
-          student
-          |> Repo.preload(:user)
-          |> Ecto.Changeset.change()
-          |> Ecto.Changeset.put_assoc(:user, user)
-          |> repo.update()
-        end)
-        |> Multi.update(:expire_student_invite, StudentInvite.expire_invite_changeset(student_invite))
-        |> Multi.run(:update_email_confirmation_state, fn repo, %{student: student} ->
-          {:ok, updated_student} = Machinery.transition_to(student, StudentEmailConfirmationStateMachine, "confirmed")
+  defp handle_existing_instructor({:error, changeset}) do
+    Repo.get_by!(Instructor, user_id: changeset.data.user_id)
+  end
 
-          student
-          |> Student.changeset(Map.from_struct(updated_student))
-          |> repo.update()
-        end)
-        |> Repo.transaction()
-        |> case do
-          {:ok, %{user: user}} -> {:ok, user}
-          {:error, _operation, changeset, _changes} -> {:error, changeset}
-          other -> other
-        end
-    end
+  def expire_student_invite(%StudentInvite{} = invite) do
+    invite
+    |> StudentInvite.changeset(%{expires_at: Timex.shift(Timex.now(), seconds: 1)})
+    |> Repo.update()
+  end
+
+  def mark_student_email_as_confirmed(%Student{} = student) do
+    {:ok, updated_student} = Machinery.transition_to(student, StudentEmailConfirmationStateMachine, "confirmed")
+
+    student
+    |> Student.changeset(Map.from_struct(updated_student))
+    |> Repo.update()
   end
 
   def create_student_invite(%Instructor{} = instructor, invite_attrs) do
@@ -136,11 +110,6 @@ defmodule ProjectDrive.Accounts do
 
     Email.student_invite_email(student_invite)
     |> Mailer.deliver_now()
-  end
-
-  defp build_new_instructor_changeset(%Identity.User{} = user, attrs) do
-    Ecto.build_assoc(user, :instructor)
-    |> Instructor.changeset(attrs)
   end
 
   defp build_student_invite_changeset(%Instructor{} = instructor, attrs) do
