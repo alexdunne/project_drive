@@ -14,12 +14,7 @@ defmodule ProjectDrive.Schedule do
 
   def get_event(id), do: Repo.get(Schedule.Event, id)
 
-  def list_events_query(%Accounts.Instructor{} = instructor, opts \\ []) do
-    # Not sure returning something Absinthe specifc from Context is the best approach
-    # We could return the query but that doesn't sound like a great idea either
-    # We could do the offset & limit ourselves and return info like if there are more
-    # but at that point we're essentially returning the connection
-
+  def fetch_schedule(%Accounts.Instructor{} = instructor, opts \\ []) do
     Schedule.Event
     |> Schedule.Event.filter_by_instructor(instructor)
     |> Schedule.Event.filter(opts[:filters])

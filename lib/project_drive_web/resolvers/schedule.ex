@@ -14,10 +14,10 @@ defmodule ProjectDriveWeb.Resolvers.Schedule do
     {:ok, event}
   end
 
-  def list_events(_, args, %{context: %{user: user}}) do
+  def fetch_schedule(_, args, %{context: %{user: user}}) do
     instructor = Accounts.get_instructor_for_user!(user.id)
 
-    Schedule.list_events_query(instructor, filters: args)
+    Schedule.fetch_schedule(instructor, filters: args)
   end
 
   def has_conflicts(_, args, %{context: %{user: user}}) do

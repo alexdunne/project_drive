@@ -27,13 +27,18 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
     end
   end
 
+  input_object :event_date_filters_type, description: "Inclusive date range" do
+    field :start, non_null(:datetime)
+    field :end, non_null(:datetime)
+  end
+
   connection(node_type: :event)
 
   object :schedule_queries do
-    connection field :events, node_type: :event do
-      arg(:search_term, :string)
+    connection field :schedule, node_type: :event do
+      arg(:between, non_null(:event_date_filters_type))
 
-      resolve(&Resolvers.Schedule.list_events/3)
+      resolve(&Resolvers.Schedule.fetch_schedule/3)
     end
 
     payload field :event_conflicts_check do
