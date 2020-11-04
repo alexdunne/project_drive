@@ -14,7 +14,7 @@ defmodule ProjectDrive.Schedule do
 
   def get_event(id), do: Repo.get(Schedule.Event, id)
 
-  def fetch_schedule(%Accounts.Instructor{} = instructor, opts \\ []) do
+  def list_events(%Accounts.Instructor{} = instructor, opts \\ []) do
     Schedule.Event
     |> Schedule.Event.filter_by_instructor(instructor)
     |> Schedule.Event.filter(opts[:filters])

@@ -122,18 +122,75 @@ defmodule ProjectDrive.Schedule.Event do
   end
 
   def filter(query, filters) do
-    defaults = %{between: nil}
+    defaults = %{search_term: "", between: nil}
     filters = Map.merge(defaults, filters)
 
+    search_term = String.downcase(filters[:search_term])
+
     query
-    |> where(^filter_between_dates(filters[:between]))
+    |> join(:inner, [ev], s in Accounts.Student, on: ev.student_id == s.id, as: :student)
+    |> where(^filter_by_search_term(search_term))
+    |> where(^filter_by_between_filter(filters[:between]))
   end
 
-  defp filter_between_dates(nil) do
+  defp filter_by_between_filter(between) when is_nil(between) do
     true
   end
 
-  defp filter_between_dates(%{start: start_datetime, end: end_datetime}) do
-    dynamic([ev], ev.starts_at >= ^start_datetime and ev.starts_at <= ^end_datetime)
+  defp filter_by_between_filter(%{start: start_date, end: end_date}) do
+    filter_between_dates(start_date, end_date)
+  end
+
+  @deprecated "Filtering by search term is no longer supported"
+  defp filter_by_search_term("today") do
+    today = Timex.now()
+
+    filter_between_dates(today)
+  end
+
+  @deprecated "Filtering by search term is no longer supported"
+  defp filter_by_search_term("tomorrow") do
+    tomorrow = Timex.now() |> Timex.shift(days: 1)
+
+    filter_between_dates(tomorrow)
+  end
+
+  @deprecated "Filtering by search term is no longer supported"
+  defp filter_by_search_term("this week") do
+    today = Timex.now()
+
+    start_date = Timex.beginning_of_week(today)
+    end_date = Timex.end_of_week(today)
+
+    filter_between_dates(start_date, end_date)
+  end
+
+  @deprecated "Filtering by search term is no longer supported"
+  defp filter_by_search_term("next week") do
+    today = Timex.now() |> Timex.shift(weeks: 1)
+
+    start_date = Timex.beginning_of_week(today)
+    end_date = Timex.end_of_week(today)
+
+    filter_between_dates(start_date, end_date)
+  end
+
+  @deprecated "Filtering by search term is no longer supported"
+  defp filter_by_search_term(student_name) do
+    value = String.trim(student_name)
+
+    if String.length(value) > 0 do
+      dynamic([student: s], ilike(s.name, ^"#{value}%"))
+    else
+      true
+    end
+  end
+
+  defp filter_between_dates(date) do
+    filter_between_dates(Timex.beginning_of_day(date), Timex.end_of_day(date))
+  end
+
+  defp filter_between_dates(start_date, end_date) do
+    dynamic([ev], ev.starts_at >= ^start_date and ev.starts_at <= ^end_date)
   end
 end

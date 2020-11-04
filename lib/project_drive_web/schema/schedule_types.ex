@@ -35,10 +35,16 @@ defmodule ProjectDriveWeb.Schema.ScheduleTypes do
   connection(node_type: :event)
 
   object :schedule_queries do
+    connection field :events, node_type: :event, deprecate: "Use schedule instead" do
+      arg(:search_term, :string)
+
+      resolve(&Resolvers.Schedule.list_events/3)
+    end
+
     connection field :schedule, node_type: :event do
       arg(:between, non_null(:event_date_filters_type))
 
-      resolve(&Resolvers.Schedule.fetch_schedule/3)
+      resolve(&Resolvers.Schedule.list_events/3)
     end
 
     payload field :event_conflicts_check do
